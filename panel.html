@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; font-src https://fonts.gstatic.com; script-src 'self'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none';">
+<title>Panel · Adwaa Travel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="kabuk">
+
+  <aside class="yan-cubuk">
+    <div class="marka">
+      <div class="fener" aria-hidden="true"></div>
+      <div class="marka-yazi">
+        <strong>Adwaa Travel</strong>
+        <small>Yönetim Paneli</small>
+      </div>
+    </div>
+
+    <nav class="rota-nav" aria-label="Panel bölümleri">
+      <button class="nav-oge aktif" data-bolum="ozet" type="button"><span class="isik" aria-hidden="true"></span>Özet</button>
+      <button class="nav-oge" data-bolum="kiralamalar" type="button"><span class="isik" aria-hidden="true"></span>Araç Kiralamaları</button>
+      <button class="nav-oge" data-bolum="turlar" type="button"><span class="isik" aria-hidden="true"></span>Tur Rezervasyonları</button>
+    </nav>
+
+    <div class="yan-cubuk-alt">
+      <div class="kullanici-etiket">Giriş yapan<b id="kullanici-adi-goster">—</b></div>
+      <button class="cikis-btn" id="cikis-btn" type="button">Çıkış yap</button>
+    </div>
+  </aside>
+
+  <main class="ana-alan">
+
+    <!-- ÖZET -->
+    <section id="bolum-ozet" class="bolum">
+      <div class="ust-serit">
+        <h1>Özet</h1>
+        <span class="tarih" id="bugun-tarih"></span>
+      </div>
+
+      <div class="istatistik-izgara">
+        <div class="istatistik-kart">
+          <div class="etiket">Devam eden kiralama</div>
+          <div class="deger" id="ist-aktif-kiralama">0</div>
+        </div>
+        <div class="istatistik-kart">
+          <div class="etiket">Planlanan tur</div>
+          <div class="deger" id="ist-planli-tur">0</div>
+        </div>
+        <div class="istatistik-kart">
+          <div class="etiket">Bekleyen işlem</div>
+          <div class="deger vurgu" id="ist-bekleyen">0</div>
+        </div>
+        <div class="istatistik-kart">
+          <div class="etiket">Toplam kayıtlı ciro</div>
+          <div class="deger" id="ist-ciro">0 ₺</div>
+        </div>
+      </div>
+
+      <div class="panel-kart">
+        <div class="panel-baslik-satiri">
+          <h2>Yaklaşan / devam eden işlemler</h2>
+        </div>
+        <div class="tablo-sarici">
+          <table>
+            <thead>
+              <tr>
+                <th>Tür</th>
+                <th>Detay</th>
+                <th>Tarih Aralığı</th>
+                <th>Fiyat</th>
+                <th>Durum</th>
+              </tr>
+            </thead>
+            <tbody id="ozet-tablo-govde"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ARAÇ KİRALAMALARI -->
+    <section id="bolum-kiralamalar" class="bolum" hidden>
+      <div class="ust-serit">
+        <h1>Araç Kiralamaları</h1>
+        <button class="ekle-btn altin" id="kiralama-ekle-btn" type="button">+ Yeni Kiralama Ekle</button>
+      </div>
+
+      <div class="panel-kart">
+        <div class="filtre-serit">
+          <input type="text" class="arama" id="kiralama-arama" placeholder="Plaka, marka, müşteri ara…">
+          <select id="kiralama-durum-filtre">
+            <option value="">Tüm durumlar</option>
+            <option value="devam">Devam ediyor</option>
+            <option value="tamamlandi">Tamamlandı</option>
+          </select>
+          <input type="date" id="kiralama-tarih-baslangic" title="Başlangıç tarihinden itibaren">
+          <input type="date" id="kiralama-tarih-bitis" title="Bitiş tarihine kadar">
+          <button class="temizle" id="kiralama-filtre-temizle" type="button">Filtreleri temizle</button>
+        </div>
+
+        <div class="tablo-sarici">
+          <table>
+            <thead>
+              <tr>
+                <th data-alan="plaka">Plaka <span class="ok">▲▼</span></th>
+                <th data-alan="marka">Araç <span class="ok">▲▼</span></th>
+                <th data-alan="baslangicTarihi">Tarih Aralığı <span class="ok">▲▼</span></th>
+                <th data-alan="fiyat">Fiyat <span class="ok">▲▼</span></th>
+                <th data-alan="musteriAdSoyad">Müşteri <span class="ok">▲▼</span></th>
+                <th>TC Kimlik No</th>
+                <th data-alan="durum">Durum <span class="ok">▲▼</span></th>
+                <th>Tamamlandı</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="kiralama-tablo-govde"></tbody>
+          </table>
+        </div>
+        <div id="kiralama-bos-durum" class="bos-durum" hidden>
+          <strong>Kayıt bulunamadı</strong>
+          Filtrelere uyan bir kiralama yok. Filtreleri temizleyip tekrar deneyin.
+        </div>
+      </div>
+    </section>
+
+    <!-- TUR REZERVASYONLARI -->
+    <section id="bolum-turlar" class="bolum" hidden>
+      <div class="ust-serit">
+        <h1>Tur Rezervasyonları</h1>
+        <button class="ekle-btn altin" id="tur-ekle-btn" type="button">+ Yeni Tur Ekle</button>
+      </div>
+
+      <div class="panel-kart">
+        <div class="filtre-serit">
+          <input type="text" class="arama" id="tur-arama" placeholder="Güzergah, şoför, araç ara…">
+          <select id="tur-durum-filtre">
+            <option value="">Tüm durumlar</option>
+            <option value="devam">Planlandı</option>
+            <option value="tamamlandi">Tamamlandı</option>
+          </select>
+          <input type="date" id="tur-tarih-baslangic" title="Başlangıç tarihinden itibaren">
+          <input type="date" id="tur-tarih-bitis" title="Bitiş tarihine kadar">
+          <button class="temizle" id="tur-filtre-temizle" type="button">Filtreleri temizle</button>
+        </div>
+
+        <div class="tablo-sarici">
+          <table>
+            <thead>
+              <tr>
+                <th data-alan="guzergah">Güzergah <span class="ok">▲▼</span></th>
+                <th data-alan="arac">Araç <span class="ok">▲▼</span></th>
+                <th data-alan="sofor">Şoför <span class="ok">▲▼</span></th>
+                <th data-alan="baslangicTarihi">Tarih Aralığı <span class="ok">▲▼</span></th>
+                <th data-alan="fiyat">Fiyat <span class="ok">▲▼</span></th>
+                <th data-alan="durum">Durum <span class="ok">▲▼</span></th>
+                <th>Tamamlandı</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="tur-tablo-govde"></tbody>
+          </table>
+        </div>
+        <div id="tur-bos-durum" class="bos-durum" hidden>
+          <strong>Kayıt bulunamadı</strong>
+          Filtrelere uyan bir tur rezervasyonu yok. Filtreleri temizleyip tekrar deneyin.
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- KİRALAMA EKLE/DÜZENLE MODAL -->
+<div class="modal-katman" id="kiralama-modal">
+  <div class="modal-kutu" role="dialog" aria-modal="true" aria-labelledby="kiralama-modal-baslik">
+    <div class="modal-baslik">
+      <h3 id="kiralama-modal-baslik">Yeni Kiralama Ekle</h3>
+      <button class="modal-kapat" type="button" data-kapat="kiralama-modal" aria-label="Kapat">✕</button>
+    </div>
+    <form id="kiralama-form" novalidate>
+      <input type="hidden" id="kiralama-id">
+      <div class="modal-govde">
+        <div class="form-izgara">
+          <div class="alan-form">
+            <label for="k-plaka">Plaka *</label>
+            <input type="text" id="k-plaka" placeholder="61 AB 123" required>
+            <span class="hata">Plaka zorunludur.</span>
+          </div>
+          <div class="alan-form">
+            <label for="k-marka">Marka *</label>
+            <input type="text" id="k-marka" placeholder="Renault" required>
+            <span class="hata">Marka zorunludur.</span>
+          </div>
+          <div class="alan-form">
+            <label for="k-model">Model *</label>
+            <input type="text" id="k-model" placeholder="Clio" required>
+            <span class="hata">Model zorunludur.</span>
+          </div>
+          <div class="alan-form">
+            <label for="k-yil">Model Yılı *</label>
+            <input type="number" id="k-yil" min="1990" max="2030" placeholder="2023" required>
+            <span class="hata">Geçerli bir yıl girin.</span>
+          </div>
+          <div class="alan-form">
+            <label for="k-baslangic">Kiralama Başlangıcı *</label>
+            <input type="date" id="k-baslangic" required>
+            <span class="hata">Başlangıç tarihi zorunludur.</span>
+          </div>
+          <div class="alan-form">
+            <label for="k-bitis">Kiralama Bitişi *</label>
+            <input type="date" id="k-bitis" required>
+            <span class="hata">Bitiş tarihi, başlangıçtan önce olamaz.</span>
+          </div>
+          <div class="alan-form">
+            <label for="k-fiyat">Fiyat (₺) *</label>
+            <input type="number" id="k-fiyat" min="0" step="0.01" placeholder="3500" required>
+            <span class="hata">Geçerli bir tutar girin.</span>
+          </div>
+          <div class="alan-form">
+            <label for="k-telefon">Müşteri Telefonu</label>
+            <input type="tel" id="k-telefon" placeholder="05xx xxx xx xx">
+          </div>
+          <div class="alan-form">
+            <label for="k-ad">Müşteri Ad Soyad *</label>
+            <input type="text" id="k-ad" placeholder="Ad Soyad" required>
+            <span class="hata">Müşteri adı zorunludur.</span>
+          </div>
+          <div class="alan-form">
+            <label for="k-tc">Müşteri TC Kimlik No *</label>
+            <input type="text" id="k-tc" inputmode="numeric" maxlength="11" placeholder="11 haneli" required>
+            <span class="hata" id="k-tc-hata">Geçerli bir TC kimlik numarası girin.</span>
+          </div>
+          <div class="alan-form tam">
+            <label for="k-not">Not</label>
+            <textarea id="k-not" rows="2" placeholder="Ek bilgi (opsiyonel)"></textarea>
+          </div>
+          <div class="alan-form tam">
+            <label><input type="checkbox" id="k-tamamlandi"> Bu kiralama tamamlandı olarak işaretle</label>
+          </div>
+        </div>
+      </div>
+      <div class="modal-alt">
+        <button type="button" class="vazgec-btn" data-kapat="kiralama-modal">Vazgeç</button>
+        <button type="submit" class="kaydet-btn">Kaydet</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- TUR EKLE/DÜZENLE MODAL -->
+<div class="modal-katman" id="tur-modal">
+  <div class="modal-kutu" role="dialog" aria-modal="true" aria-labelledby="tur-modal-baslik">
+    <div class="modal-baslik">
+      <h3 id="tur-modal-baslik">Yeni Tur Ekle</h3>
+      <button class="modal-kapat" type="button" data-kapat="tur-modal" aria-label="Kapat">✕</button>
+    </div>
+    <form id="tur-form" novalidate>
+      <input type="hidden" id="tur-id">
+      <div class="modal-govde">
+        <div class="form-izgara">
+          <div class="alan-form tam">
+            <label for="t-guzergah">Güzergah / Nereye *</label>
+            <input type="text" id="t-guzergah" placeholder="Uzungöl, Sümela Manastırı…" required>
+            <span class="hata">Güzergah zorunludur.</span>
+          </div>
+          <div class="alan-form">
+            <label for="t-arac">Araç *</label>
+            <input type="text" id="t-arac" placeholder="Plaka veya araç açıklaması" required>
+            <span class="hata">Araç bilgisi zorunludur.</span>
+          </div>
+          <div class="alan-form">
+            <label for="t-sofor">Şoför Ad Soyad *</label>
+            <input type="text" id="t-sofor" placeholder="Ad Soyad" required>
+            <span class="hata">Şoför adı zorunludur.</span>
+          </div>
+          <div class="alan-form">
+            <label for="t-baslangic">Tur Başlangıcı *</label>
+            <input type="date" id="t-baslangic" required>
+            <span class="hata">Başlangıç tarihi zorunludur.</span>
+          </div>
+          <div class="alan-form">
+            <label for="t-bitis">Tur Bitişi *</label>
+            <input type="date" id="t-bitis" required>
+            <span class="hata">Bitiş tarihi, başlangıçtan önce olamaz.</span>
+          </div>
+          <div class="alan-form">
+            <label for="t-fiyat">Fiyat (₺) *</label>
+            <input type="number" id="t-fiyat" min="0" step="0.01" placeholder="2500" required>
+            <span class="hata">Geçerli bir tutar girin.</span>
+          </div>
+          <div class="alan-form">
+            <label for="t-musteri">Müşteri / Grup</label>
+            <input type="text" id="t-musteri" placeholder="Opsiyonel">
+          </div>
+          <div class="alan-form tam">
+            <label><input type="checkbox" id="t-tamamlandi"> Bu tur tamamlandı olarak işaretle</label>
+          </div>
+        </div>
+      </div>
+      <div class="modal-alt">
+        <button type="button" class="vazgec-btn" data-kapat="tur-modal">Vazgeç</button>
+        <button type="submit" class="kaydet-btn">Kaydet</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="bildirim" id="bildirim"></div>
+
+<script src="app.js"></script>
+</body>
+</html>

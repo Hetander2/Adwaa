@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; font-src https://fonts.gstatic.com; script-src 'self'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none';">
+<title>Giriş · Adwaa Travel Panel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<main class="giris-sahne">
+  <div class="rota-cizgisi" aria-hidden="true"></div>
+
+  <div class="giris-kart">
+    <div class="marka">
+      <div class="fener" aria-hidden="true"></div>
+      <div class="marka-yazi">
+        <strong>Adwaa Travel</strong>
+        <small>Ortahisar · Trabzon</small>
+      </div>
+    </div>
+
+    <p class="giris-baslik">Yönetim Paneli</p>
+    <p class="giris-alt">Bu panel yalnızca Adwaa Travel yöneticileri içindir. Devam etmek için giriş yapın.</p>
+
+    <form id="giris-formu" autocomplete="on" novalidate>
+      <div class="alan">
+        <label for="kullanici-adi">Kullanıcı adı</label>
+        <input type="text" id="kullanici-adi" name="username" autocomplete="username" placeholder="kullanıcı adınız" required>
+      </div>
+      <div class="alan">
+        <label for="sifre">Şifre</label>
+        <input type="password" id="sifre" name="password" autocomplete="current-password" placeholder="••••••••" required>
+      </div>
+
+      <div class="giris-uyari" id="giris-uyari" role="alert"></div>
+
+      <button type="submit" class="giris-btn" id="giris-btn">Giriş Yap</button>
+    </form>
+
+    <div class="giris-not">
+      <b>Demo bilgisi:</b> Bu panel bir statik ön izleme sürümüdür; giriş kontrolü tarayıcı içinde yapılır ve
+      <b>gerçek bir güvenlik önlemi değildir</b>. Gerçek müşteri verisiyle (TC kimlik no dahil) canlıya
+      almadan önce sunucu taraflı kimlik doğrulama kurulmalıdır — ayrıntılar için README dosyasına bakın.
+    </div>
+  </div>
+</main>
+
+<script src="auth.js"></script>
+</body>
+</html>
