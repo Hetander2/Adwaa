@@ -4,13 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow, noarchive">
-<meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; font-src https://fonts.gstatic.com; script-src 'self'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none';">
 <title>Panel · Adwaa Travel</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
+<link rel="icon" href="img/favicon.png">
 </head>
 <body>
 
@@ -18,7 +17,9 @@
 
   <aside class="yan-cubuk">
     <div class="marka">
-      <div class="fener" aria-hidden="true"></div>
+      <div class="marka-logo-kutu">
+        <img src="img/adwaa-logo.png" alt="Adwaa Travel logosu" class="marka-logo">
+      </div>
       <div class="marka-yazi">
         <strong>Adwaa Travel</strong>
         <small>Yönetim Paneli</small>
@@ -27,6 +28,7 @@
 
     <nav class="rota-nav" aria-label="Panel bölümleri">
       <button class="nav-oge aktif" data-bolum="ozet" type="button"><span class="isik" aria-hidden="true"></span>Özet</button>
+      <button class="nav-oge" data-bolum="takvim" type="button"><span class="isik" aria-hidden="true"></span>Takvim</button>
       <button class="nav-oge" data-bolum="kiralamalar" type="button"><span class="isik" aria-hidden="true"></span>Araç Kiralamaları</button>
       <button class="nav-oge" data-bolum="turlar" type="button"><span class="isik" aria-hidden="true"></span>Tur Rezervasyonları</button>
     </nav>
@@ -66,22 +68,50 @@
       </div>
 
       <div class="panel-kart">
-        <div class="panel-baslik-satiri">
-          <h2>Yaklaşan / devam eden işlemler</h2>
-        </div>
+        <div class="panel-baslik-satiri"><h2>Yaklaşan / devam eden işlemler</h2></div>
         <div class="tablo-sarici">
           <table>
-            <thead>
-              <tr>
-                <th>Tür</th>
-                <th>Detay</th>
-                <th>Tarih Aralığı</th>
-                <th>Fiyat</th>
-                <th>Durum</th>
-              </tr>
-            </thead>
-            <tbody id="ozet-tablo-govde"></tbody>
+            <thead><tr><th>Tür</th><th>Detay</th><th>Tarih Aralığı</th><th>Fiyat</th><th>Durum</th></tr></thead>
+            <tbody id="ozet-tablo-govde"><tr><td colspan="5" class="yukleniyor">Yükleniyor…</td></tr></tbody>
           </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAKVİM -->
+    <section id="bolum-takvim" class="bolum" hidden>
+      <div class="ust-serit">
+        <h1>Takvim</h1>
+        <span class="tarih" id="takvim-guncel-tarih"></span>
+      </div>
+
+      <div class="panel-kart">
+        <div class="takvim-ust">
+          <button class="takvim-nav-btn" id="takvim-onceki" type="button" aria-label="Önceki ay">‹</button>
+          <h2 class="takvim-ay-baslik" id="takvim-ay-baslik">—</h2>
+          <button class="takvim-nav-btn" id="takvim-sonraki" type="button" aria-label="Sonraki ay">›</button>
+          <button class="takvim-bugun-btn" id="takvim-bugun" type="button">Bugün</button>
+        </div>
+
+        <div class="takvim-lejant">
+          <span class="madde"><span class="nokta" style="background:var(--success)"></span>Kiralama başlangıcı</span>
+          <span class="madde"><span class="nokta" style="background:var(--warn)"></span>Kiralama bitişi / teslim</span>
+          <span class="madde"><span class="nokta" style="background:var(--tur-gidis)"></span>Tur gidiş</span>
+          <span class="madde"><span class="nokta" style="background:var(--tur-donus)"></span>Tur dönüş</span>
+        </div>
+
+        <div class="takvim-govde">
+          <div class="takvim-gun-adlari">
+            <div class="takvim-gun-adi">Pzt</div><div class="takvim-gun-adi">Sal</div><div class="takvim-gun-adi">Çar</div>
+            <div class="takvim-gun-adi">Per</div><div class="takvim-gun-adi">Cum</div><div class="takvim-gun-adi">Cmt</div>
+            <div class="takvim-gun-adi">Paz</div>
+          </div>
+          <div class="takvim-izgara" id="takvim-izgara"></div>
+        </div>
+
+        <div class="takvim-detay" id="takvim-detay">
+          <h3 id="takvim-detay-baslik">Bugünün işlemleri</h3>
+          <div id="takvim-detay-liste"></div>
         </div>
       </div>
     </section>
@@ -112,16 +142,16 @@
               <tr>
                 <th data-alan="plaka">Plaka <span class="ok">▲▼</span></th>
                 <th data-alan="marka">Araç <span class="ok">▲▼</span></th>
-                <th data-alan="baslangicTarihi">Tarih Aralığı <span class="ok">▲▼</span></th>
+                <th data-alan="baslangic">Tarih Aralığı <span class="ok">▲▼</span></th>
                 <th data-alan="fiyat">Fiyat <span class="ok">▲▼</span></th>
-                <th data-alan="musteriAdSoyad">Müşteri <span class="ok">▲▼</span></th>
+                <th data-alan="musteriAd">Müşteri <span class="ok">▲▼</span></th>
                 <th>TC Kimlik No</th>
                 <th data-alan="durum">Durum <span class="ok">▲▼</span></th>
                 <th>Tamamlandı</th>
                 <th></th>
               </tr>
             </thead>
-            <tbody id="kiralama-tablo-govde"></tbody>
+            <tbody id="kiralama-tablo-govde"><tr><td colspan="9" class="yukleniyor">Yükleniyor…</td></tr></tbody>
           </table>
         </div>
         <div id="kiralama-bos-durum" class="bos-durum" hidden>
@@ -158,14 +188,14 @@
                 <th data-alan="guzergah">Güzergah <span class="ok">▲▼</span></th>
                 <th data-alan="arac">Araç <span class="ok">▲▼</span></th>
                 <th data-alan="sofor">Şoför <span class="ok">▲▼</span></th>
-                <th data-alan="baslangicTarihi">Tarih Aralığı <span class="ok">▲▼</span></th>
+                <th data-alan="baslangic">Tarih Aralığı <span class="ok">▲▼</span></th>
                 <th data-alan="fiyat">Fiyat <span class="ok">▲▼</span></th>
                 <th data-alan="durum">Durum <span class="ok">▲▼</span></th>
                 <th>Tamamlandı</th>
                 <th></th>
               </tr>
             </thead>
-            <tbody id="tur-tablo-govde"></tbody>
+            <tbody id="tur-tablo-govde"><tr><td colspan="8" class="yukleniyor">Yükleniyor…</td></tr></tbody>
           </table>
         </div>
         <div id="tur-bos-durum" class="bos-durum" hidden>
@@ -206,7 +236,7 @@
           </div>
           <div class="alan-form">
             <label for="k-yil">Model Yılı *</label>
-            <input type="number" id="k-yil" min="1990" max="2030" placeholder="2023" required>
+            <input type="number" id="k-yil" min="1990" max="2035" placeholder="2023" required>
             <span class="hata">Geçerli bir yıl girin.</span>
           </div>
           <div class="alan-form">
@@ -220,8 +250,14 @@
             <span class="hata">Bitiş tarihi, başlangıçtan önce olamaz.</span>
           </div>
           <div class="alan-form">
-            <label for="k-fiyat">Fiyat (₺) *</label>
-            <input type="number" id="k-fiyat" min="0" step="0.01" placeholder="3500" required>
+            <label for="k-fiyat">Fiyat *</label>
+            <div class="tutar-grup">
+              <input type="number" id="k-fiyat" min="0" step="0.01" placeholder="3500" required>
+              <select id="k-para-birimi">
+                <option value="TRY">₺ TL</option>
+                <option value="USD">$ USD</option>
+              </select>
+            </div>
             <span class="hata">Geçerli bir tutar girin.</span>
           </div>
           <div class="alan-form">
@@ -236,7 +272,7 @@
           <div class="alan-form">
             <label for="k-tc">Müşteri TC Kimlik No *</label>
             <input type="text" id="k-tc" inputmode="numeric" maxlength="11" placeholder="11 haneli" required>
-            <span class="hata" id="k-tc-hata">Geçerli bir TC kimlik numarası girin.</span>
+            <span class="hata">Geçerli bir TC kimlik numarası girin.</span>
           </div>
           <div class="alan-form tam">
             <label for="k-not">Not</label>
@@ -249,7 +285,7 @@
       </div>
       <div class="modal-alt">
         <button type="button" class="vazgec-btn" data-kapat="kiralama-modal">Vazgeç</button>
-        <button type="submit" class="kaydet-btn">Kaydet</button>
+        <button type="submit" class="kaydet-btn" id="kiralama-kaydet-btn">Kaydet</button>
       </div>
     </form>
   </div>
@@ -282,18 +318,24 @@
             <span class="hata">Şoför adı zorunludur.</span>
           </div>
           <div class="alan-form">
-            <label for="t-baslangic">Tur Başlangıcı *</label>
+            <label for="t-baslangic">Tur Başlangıcı (gidiş) *</label>
             <input type="date" id="t-baslangic" required>
             <span class="hata">Başlangıç tarihi zorunludur.</span>
           </div>
           <div class="alan-form">
-            <label for="t-bitis">Tur Bitişi *</label>
+            <label for="t-bitis">Tur Bitişi (dönüş) *</label>
             <input type="date" id="t-bitis" required>
             <span class="hata">Bitiş tarihi, başlangıçtan önce olamaz.</span>
           </div>
           <div class="alan-form">
-            <label for="t-fiyat">Fiyat (₺) *</label>
-            <input type="number" id="t-fiyat" min="0" step="0.01" placeholder="2500" required>
+            <label for="t-fiyat">Fiyat *</label>
+            <div class="tutar-grup">
+              <input type="number" id="t-fiyat" min="0" step="0.01" placeholder="2500" required>
+              <select id="t-para-birimi">
+                <option value="TRY">₺ TL</option>
+                <option value="USD">$ USD</option>
+              </select>
+            </div>
             <span class="hata">Geçerli bir tutar girin.</span>
           </div>
           <div class="alan-form">
@@ -307,7 +349,7 @@
       </div>
       <div class="modal-alt">
         <button type="button" class="vazgec-btn" data-kapat="tur-modal">Vazgeç</button>
-        <button type="submit" class="kaydet-btn">Kaydet</button>
+        <button type="submit" class="kaydet-btn" id="tur-kaydet-btn">Kaydet</button>
       </div>
     </form>
   </div>

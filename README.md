@@ -1,117 +1,124 @@
-# Adwaa Travel — Yönetim Paneli (Demo)
+# Adwaa Travel — Yönetim Paneli (Yerel Ağ Sürümü)
 
-Adwaa Travel (Konaklar Mah., Ortahisar/Trabzon) için hazırlanmış, araç kiralama ve
-tur rezervasyonlarını tek yerden takip etmeye yarayan, sadece yöneticilere yönelik
-bir iç panel demosu.
+Adwaa Travel (Konaklar Mah., Ortahisar/Trabzon) için araç kiralama ve tur
+rezervasyonlarını tek yerden takip etmeye yarayan, **yerel ağdaki 2-3
+bilgisayardan ortak veriyle** kullanılabilen bir yönetim paneli.
+
+Önceki statik (GitHub Pages) demonun aksine bu sürümün **gerçek bir sunucusu**
+vardır: giriş kontrolü sunucuda yapılır, şifreler hash'lenmiş olarak saklanır,
+ve tüm bilgisayarlar aynı veriyi görür.
 
 ## İçindekiler
-- `index.html` — Giriş ekranı
-- `panel.html` — Ana panel (Özet, Araç Kiralamaları, Tur Rezervasyonları)
-- `style.css` — Tüm tasarım
-- `auth.js` — Giriş mantığı
-- `app.js` — Liste/filtre/sıralama/CRUD mantığı
-- `robots.txt` — Arama motorlarının paneli indekslememesi için
 
-## Özellikler
-- **Araç Kiralamaları:** plaka, marka, model (yılıyla), fiyat, kiralama tarih
-  aralığı, müşteri ad-soyad ve TC kimlik no.
-- **Tur Rezervasyonları:** güzergah, araç, şoför, fiyat, tarih aralığı.
-- Her iki listede de: metin arama, duruma göre filtre, tarih aralığına göre
-  filtre, sütun başlığına tıklayarak sıralama, ve tek tıkla "tamamlandı" işaretleme.
-- Özet ekranında devam eden kiralama/tur sayısı ve toplam kayıtlı ciro.
-- TC kimlik no, resmî algoritmayla doğrulanır ve tablo görünümünde yalnızca ilk/son
-  iki hane gösterilecek şekilde maskelenir (tam numara yalnızca düzenleme
-  formunda görünür).
-
-## Yerelde çalıştırma
-Ekstra kuruluma gerek yok. Klasörü bir yerel sunucudan açmanız yeterli
-(doğrudan dosya olarak `file://` ile açarsanız bazı tarayıcılarda güvenlik
-politikaları nedeniyle sorun çıkabilir):
-
-```bash
-cd adwaa-panel
-python3 -m http.server 8080
-# sonra tarayıcıda: http://localhost:8080
+```
+adwaa-yerel/
+  server.js              → Sunucu (Node.js, ek paket gerektirmez)
+  sifre-degistir.js       → Şifre / kullanıcı değiştirme aracı
+  package.json
+  baslat-windows.bat       → Windows'ta çift tıkla başlat
+  baslat-mac-linux.sh       → macOS/Linux'ta başlat
+  data/db.json             → Veriler burada tutulur (ilk çalıştırmada oluşur)
+  public/
+    index.html              → Giriş ekranı
+    panel.html               → Ana panel
+    style.css
+    giris.js                 → Giriş ekranı mantığı
+    app.js                    → Panel mantığı (liste/filtre/takvim/CRUD)
+    img/adwaa-logo.png         → Logonuz (gönderdiğiniz görselden işlendi)
+    img/favicon.png             → Sekme simgesi
 ```
 
-## GitHub'a yükleme ve GitHub Pages ile demo
-```bash
-git init
-git add .
-git commit -m "Adwaa Travel panel demo"
-git branch -M main
-git remote add origin <repo-url>
-git push -u origin main
-```
-Ardından GitHub'da **Settings → Pages** bölümünden `main` dalını seçip
-yayınlayın. Adresiniz `https://<kullanici-adi>.github.io/<repo-adi>/` olacaktır.
+## Kurulum ve çalıştırma
+
+1. [nodejs.org](https://nodejs.org) adresinden Node.js'i indirip kurun (LTS
+   sürüm yeterli). Kurulum sırasında ekstra bir seçim yapmanıza gerek yok.
+2. Bu klasörü panelin sürekli açık kalacağı ofis bilgisayarına kopyalayın.
+3. **Windows:** `baslat-windows.bat` dosyasına çift tıklayın.
+   **macOS/Linux:** Terminalde bu klasöre gidip `./baslat-mac-linux.sh` yazın
+   (veya `node server.js`).
+4. Açılan pencerede şuna benzer bir çıktı görürsünüz:
+   ```
+   Bu bilgisayardan : http://localhost:3000
+   Ağdaki diğer bilgisayarlardan : http://192.168.1.50:3000
+   ```
+5. **O bilgisayarda** tarayıcıdan `http://localhost:3000` açın.
+   **Ofisteki diğer bilgisayarlardan** ikinci satırdaki adresi (kendi IP'niz
+   farklı olacaktır) tarayıcıya yazın — hepsi aynı panele, aynı veriye bağlanır.
+6. Bu pencere kapatılırsa panel durur; sürekli açık kalması gereken bir
+   bilgisayarda (örn. resepsiyon/ofis masaüstü) çalıştırın ve o bilgisayarın
+   uyku moduna geçmemesini sağlayın.
 
 ## Demo giriş bilgileri
-`auth.js` içinde tanımlıdır:
+
 - Kullanıcı adı: `adwaayonetici`
 - Şifre: `Trabzon61!Adwaa`
 
-Bunları yayınlamadan önce mutlaka değiştirin (`auth.js` dosyasının en üstündeki
-iki değişken).
+**İlk fırsatta değiştirin:**
+```
+node sifre-degistir.js
+```
+Bu komut size kullanıcı adı ve yeni şifre sorar; şifre hash'lenerek
+`data/db.json` içine kaydedilir (düz metin olarak hiçbir yerde tutulmaz).
+Aynı komutla ek yönetici hesapları da oluşturabilirsiniz.
 
----
+## Bu sürümde neler değişti / eklendi
 
-## ÖNEMLİ — Lütfen canlıya almadan önce okuyun
+- **Logo:** Gönderdiğiniz görsel işlenip (arka planı şeffaflaştırılıp)
+  giriş ekranı ve panel kenar çubuğuna eklendi.
+- **Para birimi:** Kiralama ve tur fiyatları artık ₺ (TL) veya $ (USD) olarak
+  girilebiliyor; listelerde ve Özet ekranındaki toplam ciroda buna göre
+  gösteriliyor. **Not:** TL ve USD tutarları birbirine karıştırılıp tek bir
+  toplam olarak toplanmaz (yanlış bir toplam vermemek için) — Özet ekranında
+  iki tutar ayrı ayrı gösterilir.
+- **Takvim:** "Takvim" sekmesinde aylık görünümde hangi gün araç çıkışı,
+  araç dönüşü, tur gidişi ve tur dönüşü olduğunu renkli etiketlerle görebilir,
+  bir güne tıklayarak o günün tüm işlemlerinin detayını alttaki panelde
+  görebilirsiniz.
 
-Talebinizde "her türlü siber saldırıya karşı dayanıklı, hiçbir güvenlik açığı
-olmayan" bir sistem istediniz. Bunu dürüstçe söylemem gerekiyor: **bu tür bir
-garanti hiçbir yazılım için verilemez**, ve bu proje özelinde de önemli bir
-sınırlama var — bu bir **statik HTML/JS sitesi** (VS Code'a yapıştırıp GitHub'a
-yüklediğiniz, sunucu tarafı kodu olmayan bir yapı). Bu mimaride:
+## Güvenlik — gerçekte ne değişti, ne değişmedi
 
-1. **Giriş ekranı gerçek bir erişim kontrolü değildir.** Kullanıcı adı/şifre
-   kontrolü tarayıcıda çalışan JavaScript ile yapılır. Sitenin adresini bilen
-   biri "Görüntüle → Sayfa Kaynağı" ile `auth.js` dosyasını açıp şifreyi
-   doğrudan okuyabilir, ya da `panel.html`'e giriş ekranını hiç görmeden
-   doğrudan gidebilir. Bu, panel bağlantısının rastgele biri tarafından
-   kazara açılmasını engeller; **kararlı bir saldırıya karşı koruma sağlamaz.**
-2. **Veriler tarayıcıda (localStorage) düz metin olarak durur.** Şifrelenmez.
-   Panele erişebilen herkes (veya o cihaza/tarayıcıya erişebilen herkes)
-   tüm müşteri adlarını ve **TC kimlik numaralarını** görebilir.
-3. **GitHub Pages herkese açık bir barındırma servisidir.** Depo (repository)
-   "public" ise, adresi bilen/bulan herkes siteye erişebilir — "sadece
-   yöneticiler görsün" isteğiniz bu ortamda teknik olarak sağlanamaz. Depoyu
-   "private" yapmak GitHub Pages'te ek koşullar/ücretli plan gerektirebilir;
-   yine de gerçek bir kimlik doğrulama yerine geçmez.
-4. Statik barındırmada özel HTTP güvenlik başlıkları
-   (Strict-Transport-Security, X-Content-Type-Options, Referrer-Policy vb.)
-   ayarlanamaz; bunlar ancak Netlify/Vercel/Cloudflare gibi bir sunucu
-   katmanında eklenebilir.
+Önceki statik sürümden farklı olarak:
+- Giriş kontrolü artık **sunucuda** yapılıyor; şifre tarayıcıya hiç
+  gönderilmiyor, hash'i bile istemciye sızmıyor.
+- Şifreler `crypto.scrypt` ile tuzlanıp hash'lenerek saklanıyor (düz metin
+  değil).
+- Art arda 5 başarısız girişten sonra o IP adresi 30 saniye kilitleniyor —
+  bu kez gerçekten sunucu tarafında, atlatılması client-side'daki gibi kolay
+  değil.
+- Oturumlar HttpOnly + SameSite=Strict çerezle yönetiliyor (JavaScript ile
+  çerez okunamaz, farklı bir siteden tetiklenen isteklerde çerez gönderilmez).
+- Tüm kullanıcı girdisi ekrana yazılırken kaçışlanıyor (XSS'e karşı), TC
+  kimlik no hem istemcide hem **sunucuda** resmî algoritmayla doğrulanıyor,
+  listede maskeleniyor.
 
-**TC kimlik numarası, Türkiye'de KVKK kapsamında korunan bir kişisel veridir.**
-Gerçek müşteri verisiyle bu paneli olduğu gibi canlıya almanızı **önermiyorum.**
+Yine de bilmeniz gereken sınırlar:
+- Bu sunucu **düz HTTP** üzerinden çalışır (HTTPS yok). Güvendiğiniz bir ofis
+  ağında bu makul bir risktir, ama **bu paneli asla doğrudan internete
+  açmayın / router'da port yönlendirmesi yapmayın.** İnternetten erişim
+  gerekiyorsa (örn. şubeler arası), önce bir uzman ile HTTPS + VPN gibi bir
+  katman kurulmalı.
+- Veriler `data/db.json` dosyasında düz JSON olarak tutulur (şifre hariç,
+  TC kimlik no dahil diğer alanlar şifrelenmez). Bu dosyaya erişebilen biri
+  (o bilgisayara fiziksel/uzak erişimi olan biri) verileri okuyabilir. Bu
+  bilgisayarın kendi kullanıcı hesabı şifreli ve fiziksel olarak güvenli
+  olmalı.
+- Oturumlar bellekte tutulur; sunucu yeniden başlarsa herkes tekrar giriş
+  yapar (veri kaybolmaz, sadece oturumlar sıfırlanır).
 
-### Gerçek/canlı kullanım için ne gerekir?
-- Bir **sunucu taraflı** kimlik doğrulama (ör. e-posta/şifre + oturum çerezi,
-  şifreler hash'lenmiş — bcrypt/argon2 — olarak saklanmalı).
-- Verilerin tarayıcı yerine bir **veritabanında** (ör. Postgres/MySQL) ve
-  yalnızca kimliği doğrulanmış isteklerle erişilebilir bir **API** arkasında
-  tutulması.
-- HTTPS zorunlu, oturum süresi kısıtlı, başarısız girişlerde sunucu taraflı
-  kilitleme (bu demodaki kilitleme yalnızca tarayıcıda ve kolayca aşılabilir).
-- TC kimlik no gibi alanlar için erişim günlüğü (kim, ne zaman görüntüledi) ve
-  KVKK'ya uygun aydınlatma metni / açık rıza süreci.
-- Düzenli yedekleme ve yetki seviyeleri (ör. sahip / operasyon çalışanı).
+**TC kimlik numarası KVKK kapsamında korunan bir kişisel veridir.** Düzenli
+yedek alın (`data/db.json` dosyasını periyodik olarak güvenli bir yere
+kopyalamanız yeterlidir) ve bu bilgisayara kimlerin erişebildiğini kontrol
+altında tutun.
 
-Bu adımlar için Node.js/Express + PostgreSQL, veya Supabase/Firebase gibi
-"backend-as-a-service" çözümleri (ikisi de gerçek kullanıcı doğrulaması ve
-erişim kuralları sunar) makul başlangıç noktalarıdır. İsterseniz bu panelin
-arayüzünü koruyup arka ucunu böyle bir yapıya bağlamanıza da yardımcı
-olabilirim.
+## Sorun giderme
 
-### Bu demoda yine de uygulanan iyi pratikler
-- Tüm kullanıcı girdisi ekrana yazılırken HTML olarak kaçışlanır (XSS'e karşı).
-- Sıkı bir İçerik Güvenliği Politikası (CSP) tanımlıdır; satır içi (`inline`)
-  script çalıştırılmaz.
-- TC kimlik no, resmî checksum algoritmasıyla doğrulanır ve listede maskelenir.
-- Sayfalar arama motorlarınca indekslenmesin diye `noindex` ve `robots.txt`
-  ile işaretlenmiştir.
-- Art arda 5 başarısız girişten sonra geçici (tarayıcı içi) kilitleme uygulanır.
-
-Bunlar faydalı alışkanlıklardır ama yukarıdaki mimari sınırlamayı ortadan
-kaldırmaz.
+- **"Node.js bulunamadı" hatası:** [nodejs.org](https://nodejs.org)'dan kurun.
+- **Diğer bilgisayarlar bağlanamıyor:** Sunucu bilgisayarının güvenlik
+  duvarı (Windows Defender Firewall vb.) 3000 portunu engelliyor olabilir;
+  ilk bağlantıda "izin ver" penceresi çıkarsa onaylayın. Ayrıca tüm
+  bilgisayarların **aynı Wi-Fi/ağda** olduğundan emin olun.
+- **Şifremi unuttum:** `node sifre-degistir.js` çalıştırıp aynı kullanıcı
+  adıyla yeni bir şifre belirleyin.
+- **Port 3000 kullanımda hatası:** Pansüden önce `set PORT=3001` (Windows)
+  veya `PORT=3001 node server.js` (Mac/Linux) ile farklı bir port
+  belirtebilirsiniz.

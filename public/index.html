@@ -4,13 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow, noarchive">
-<meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; font-src https://fonts.gstatic.com; script-src 'self'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none';">
 <title>Giriş · Adwaa Travel Panel</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
+<link rel="icon" href="img/favicon.png">
 </head>
 <body>
 
@@ -19,7 +18,9 @@
 
   <div class="giris-kart">
     <div class="marka">
-      <div class="fener" aria-hidden="true"></div>
+      <div class="marka-logo-kutu">
+        <img src="img/adwaa-logo.png" alt="Adwaa Travel logosu" class="marka-logo buyuk">
+      </div>
       <div class="marka-yazi">
         <strong>Adwaa Travel</strong>
         <small>Ortahisar · Trabzon</small>
@@ -45,13 +46,13 @@
     </form>
 
     <div class="giris-not">
-      <b>Demo bilgisi:</b> Bu panel bir statik ön izleme sürümüdür; giriş kontrolü tarayıcı içinde yapılır ve
-      <b>gerçek bir güvenlik önlemi değildir</b>. Gerçek müşteri verisiyle (TC kimlik no dahil) canlıya
-      almadan önce sunucu taraflı kimlik doğrulama kurulmalıdır — ayrıntılar için README dosyasına bakın.
+      <b>Not:</b> Bu panel yerel ağ üzerinde çalışacak şekilde tasarlanmıştır. Kimlik doğrulama
+      sunucu tarafında yapılır ve şifreler hash'lenmiş olarak saklanır. Ayrıntılar ve şifre
+      değiştirme talimatı için <b>README.md</b> dosyasına bakın.
     </div>
   </div>
 </main>
 
-<script src="auth.js"></script>
+<script src="giris.js"></script>
 </body>
 </html>

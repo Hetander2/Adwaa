@@ -1,0 +1,8 @@
+# Gerçek müşteri verisi ve şifre hash'leri burada tutulur — asla paylaşmayın / GitHub'a yüklemeyin.
+data/db.json
+
+# İşletim sistemi / editör dosyaları
+.DS_Store
+Thumbs.db
+node_modules/
+*.log
