@@ -348,6 +348,44 @@ tbody tr.tamamlandi-satir .metin-vurgu{ text-decoration: line-through; text-deco
 .takvim-detay-bos{ font-size: 13px; color: var(--ink-faint); padding: 8px 0; }
 .takvim-hucre{ font-family: inherit; }
 
+/* ---------------- Araçlar & şoför seçiciler ---------------- */
+
+.arac-secici{ display: flex; align-items: center; gap: 10px; }
+.arac-onizleme-foto{
+  width: 48px; height: 48px; border-radius: 8px; object-fit: cover;
+  border: 1px solid var(--line); background: var(--paper); flex: none;
+}
+.arac-secici select{ flex: 1 1 auto; }
+
+.foto-yukleme{ display: flex; align-items: center; gap: 14px; }
+.foto-onizleme{
+  width: 88px; height: 66px; border-radius: 8px; object-fit: cover;
+  border: 1px solid var(--line); background: var(--paper); flex: none;
+}
+.foto-yukleme input[type="file"]{ font-size: 12.5px; max-width: 220px; }
+
+.arac-izgara{
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 14px;
+  padding: 18px 20px 20px;
+}
+.arac-kart{
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
+}
+.arac-kart-foto{ width: 100%; aspect-ratio: 16 / 10; overflow: hidden; background: var(--paper); }
+.arac-kart-foto img{ width: 100%; height: 100%; object-fit: cover; display: block; }
+.arac-kart-govde{ padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
+.arac-kart-model{ font-size: 13.5px; color: var(--ink); font-weight: 500; }
+.arac-kart-alt{ display: flex; align-items: center; justify-content: space-between; margin-top: 2px; }
+.arac-kart-eylem{ display: flex; gap: 6px; padding: 0 14px 14px; }
+.arac-kart-eylem .simge-btn{ flex: 1; }
+
 @media (max-width: 880px){
   .kabuk{ grid-template-columns: 1fr; }
   .yan-cubuk{ flex-direction: row; overflow-x: auto; align-items: center; }
@@ -361,4 +399,6 @@ tbody tr.tamamlandi-satir .metin-vurgu{ text-decoration: line-through; text-deco
   .takvim-hucre{ min-height: 64px; }
   .takvim-etiket{ display: none; }
   .takvim-gun-no{ font-size: 11px; }
+  .arac-izgara{ grid-template-columns: 1fr 1fr; padding: 14px; }
+  .foto-yukleme{ flex-direction: column; align-items: flex-start; }
 }

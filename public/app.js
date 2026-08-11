@@ -123,16 +123,24 @@
     baglaKiralamaOlaylari();
     baglaTurOlaylari();
     baglaTakvimOlaylari();
+    baglaAracOlaylari();
+    baglaSoforOlaylari();
+    baglaSeciciler();
     baglaModalOrtak();
 
     veriYenile();
   }
 
   function veriYenile() {
-    return Promise.all([apiGetir("/api/kiralamalar"), apiGetir("/api/turlar")])
+    return Promise.all([
+      apiGetir("/api/kiralamalar"), apiGetir("/api/turlar"),
+      apiGetir("/api/araclar"), apiGetir("/api/soforler")
+    ])
       .then(function (sonuclar) {
         kiralamaVerisi = sonuclar[0].veri || [];
         turVerisi = sonuclar[1].veri || [];
+        aracVerisi = sonuclar[2].veri || [];
+        soforVerisi = sonuclar[3].veri || [];
         tumRenderEt();
       })
       .catch(function () { /* yönlendirme zaten yapılmış olabilir */ });
@@ -143,10 +151,15 @@
     turRenderEt();
     ozetRenderEt();
     takvimRenderEt();
+    araclarRenderEt();
+    soforlerRenderEt();
+    aracSecicileriDoldur();
   }
 
   var kiralamaVerisi = [];
   var turVerisi = [];
+  var aracVerisi = [];
+  var soforVerisi = [];
 
   /* ---------- Sekme gezinmesi ---------- */
 
@@ -797,6 +810,382 @@
       if (!btn) return;
       takvim.secili = btn.getAttribute("data-tarih");
       takvimRenderEt();
+    });
+  }
+
+  /* =========================================================
+     ARAÇLAR (filo)
+     ========================================================= */
+
+  var aracModal = el("arac-modal");
+  var aracForm = el("arac-form");
+  var aracSeciliFotoBase64; // yeni seçilen fotoğraf (henüz kaydedilmedi); tanımsızsa "değiştirilmedi"
+
+  function aracDisaridaMi(arac) {
+    var kiralamada = kiralamaVerisi.some(function (k) { return !k.tamamlandi && k.plaka === arac.plaka; });
+    var turda = turVerisi.some(function (t) { return !t.tamamlandi && t.arac.indexOf(arac.plaka) !== -1; });
+    return kiralamada || turda;
+  }
+
+  function araclarRenderEt() {
+    var izgara = el("arac-izgara");
+    if (!izgara) return;
+    var bosDurum = el("arac-bos-durum");
+
+    if (aracVerisi.length === 0) {
+      izgara.innerHTML = "";
+      if (bosDurum) bosDurum.hidden = false;
+      return;
+    }
+    if (bosDurum) bosDurum.hidden = true;
+
+    var liste = aracVerisi.slice().sort(function (a, b) { return a.plaka.localeCompare(b.plaka, "tr"); });
+
+    izgara.innerHTML = liste.map(function (a) {
+      var disarida = aracDisaridaMi(a);
+      var fotoSrc = a.fotoYolu ? a.fotoYolu : "img/arac-yok.svg";
+      return (
+        '<div class="arac-kart" data-id="' + escapeHTML(a.id) + '">' +
+          '<div class="arac-kart-foto"><img src="' + escapeHTML(fotoSrc) + '" alt="' + escapeHTML(a.plaka) + '"></div>' +
+          '<div class="arac-kart-govde">' +
+            '<span class="plaka-etiket">' + escapeHTML(a.plaka) + "</span>" +
+            '<span class="arac-kart-model">' + escapeHTML(a.marka) + " " + escapeHTML(a.model) + " (" + escapeHTML(a.yil) + ")</span>" +
+            '<div class="arac-kart-alt">' +
+              (disarida ? '<span class="durum-rozet devam">Dışarıda</span>' : '<span class="durum-rozet tamam">Müsait</span>') +
+            "</div>" +
+          "</div>" +
+          '<div class="arac-kart-eylem">' +
+            '<button class="simge-btn" data-eylem="duzenle" type="button" title="Düzenle">✎ Düzenle</button>' +
+            '<button class="simge-btn sil" data-eylem="sil" type="button" title="Sil">🗑</button>' +
+          "</div>" +
+        "</div>"
+      );
+    }).join("");
+  }
+
+  function aracModalAc(id) {
+    aracForm.reset();
+    aracSeciliFotoBase64 = undefined;
+    document.querySelectorAll("#arac-form .alan-form").forEach(function (a) { a.classList.remove("gecersiz"); });
+
+    if (id) {
+      var kayit = aracVerisi.find(function (a) { return a.id === id; });
+      if (!kayit) return;
+      el("arac-modal-baslik").textContent = "Aracı Düzenle";
+      el("arac-id").value = kayit.id;
+      el("a-plaka").value = kayit.plaka;
+      el("a-marka").value = kayit.marka;
+      el("a-model").value = kayit.model;
+      el("a-yil").value = kayit.yil;
+      el("a-foto-onizleme").src = kayit.fotoYolu ? kayit.fotoYolu : "img/arac-yok.svg";
+    } else {
+      el("arac-modal-baslik").textContent = "Yeni Araç Ekle";
+      el("arac-id").value = "";
+      el("a-foto-onizleme").src = "img/arac-yok.svg";
+    }
+    aracModal.classList.add("acik");
+    el("a-plaka").focus();
+  }
+  function aracModalKapat() { aracModal.classList.remove("acik"); }
+
+  var ARAC_ALAN_ESLESME = { plaka: "a-plaka", marka: "a-marka", model: "a-model", yil: "a-yil" };
+  function aracFormHatalariUygula(hatalar) {
+    document.querySelectorAll("#arac-form .alan-form").forEach(function (a) { a.classList.remove("gecersiz"); });
+    var ilk = null;
+    (hatalar || []).forEach(function (alanAdi) {
+      var girdiId = ARAC_ALAN_ESLESME[alanAdi];
+      if (!girdiId) return;
+      var girdi = el(girdiId);
+      if (!girdi) return;
+      var sarici = girdi.closest(".alan-form");
+      if (sarici) { sarici.classList.add("gecersiz"); if (!ilk) ilk = girdi; }
+    });
+    if (ilk) ilk.focus();
+  }
+
+  function baglaAracOlaylari() {
+    var ekleBtn = el("arac-ekle-btn");
+    if (!ekleBtn) return;
+    ekleBtn.addEventListener("click", function () { aracModalAc(null); });
+
+    el("a-foto-girdi").addEventListener("change", function (e) {
+      var dosya = e.target.files && e.target.files[0];
+      if (!dosya) return;
+      if (!/^image\/(jpeg|png|webp)$/.test(dosya.type)) {
+        bildirimGoster("Yalnızca JPG, PNG veya WEBP fotoğraf seçebilirsiniz.", "sil");
+        e.target.value = "";
+        return;
+      }
+      resimSikistir(dosya, 900, 0.82).then(function (dataUrl) {
+        aracSeciliFotoBase64 = dataUrl;
+        el("a-foto-onizleme").src = dataUrl;
+      }).catch(function () {
+        bildirimGoster("Fotoğraf işlenemedi, lütfen başka bir dosya deneyin.", "sil");
+      });
+    });
+
+    el("arac-izgara").addEventListener("click", function (e) {
+      var kart = e.target.closest(".arac-kart[data-id]");
+      if (!kart) return;
+      var id = kart.getAttribute("data-id");
+      var btn = e.target.closest("button[data-eylem]");
+      if (!btn) return;
+      var eylem = btn.getAttribute("data-eylem");
+      if (eylem === "duzenle") aracModalAc(id);
+      if (eylem === "sil") {
+        var kayit = aracVerisi.find(function (a) { return a.id === id; });
+        if (!kayit) return;
+        if (!window.confirm(kayit.plaka + " plakalı araç filodan silinsin mi? Geçmiş kiralama/tur kayıtları etkilenmez.")) return;
+        apiGonder("/api/araclar/" + id, "DELETE").then(function (sonuc) {
+          if (sonuc.durum === 200) { veriYenile(); bildirimGoster("Araç silindi.", "sil"); }
+          else bildirimGoster((sonuc.veri && sonuc.veri.mesaj) || "Silinemedi.", "sil");
+        });
+      }
+    });
+
+    aracForm.addEventListener("submit", function (e) {
+      e.preventDefault();
+      var kaydetBtn = el("arac-kaydet-btn");
+      kaydetBtn.disabled = true; kaydetBtn.textContent = "Kaydediliyor…";
+
+      var govde = {
+        plaka: el("a-plaka").value.trim(),
+        marka: el("a-marka").value.trim(),
+        model: el("a-model").value.trim(),
+        yil: Number(el("a-yil").value)
+      };
+      if (aracSeciliFotoBase64) govde.fotoBase64 = aracSeciliFotoBase64;
+
+      var mevcutId = el("arac-id").value;
+      var istek = mevcutId ? apiGonder("/api/araclar/" + mevcutId, "PUT", govde) : apiGonder("/api/araclar", "POST", govde);
+
+      istek.then(function (sonuc) {
+        kaydetBtn.disabled = false; kaydetBtn.textContent = "Kaydet";
+        if (sonuc.durum === 200 || sonuc.durum === 201) {
+          aracModalKapat();
+          veriYenile();
+          bildirimGoster(mevcutId ? "Araç güncellendi." : "Yeni araç eklendi.");
+          return;
+        }
+        if (sonuc.durum === 422) {
+          aracFormHatalariUygula(sonuc.veri.hatalar);
+          bildirimGoster("Lütfen işaretli alanları kontrol edin.", "sil");
+          return;
+        }
+        bildirimGoster((sonuc.veri && sonuc.veri.mesaj) || "Bir hata oluştu.", "sil");
+      }).catch(function () {
+        kaydetBtn.disabled = false; kaydetBtn.textContent = "Kaydet";
+      });
+    });
+  }
+
+  /* =========================================================
+     ŞOFÖRLER
+     ========================================================= */
+
+  var soforModal = el("sofor-modal");
+  var soforForm = el("sofor-form");
+
+  function soforlerRenderEt() {
+    var govde = el("sofor-tablo-govde");
+    if (!govde) return;
+    var bosDurum = el("sofor-bos-durum");
+
+    if (soforVerisi.length === 0) {
+      govde.innerHTML = "";
+      if (bosDurum) bosDurum.hidden = false;
+      return;
+    }
+    if (bosDurum) bosDurum.hidden = true;
+
+    var liste = soforVerisi.slice().sort(function (a, b) { return a.adSoyad.localeCompare(b.adSoyad, "tr"); });
+
+    govde.innerHTML = liste.map(function (s) {
+      return (
+        '<tr data-id="' + escapeHTML(s.id) + '">' +
+          "<td>" + escapeHTML(s.adSoyad) + "</td>" +
+          "<td>" + (s.telefon ? escapeHTML(s.telefon) : '<span class="yardim-metin">—</span>') + "</td>" +
+          '<td class="satir-eylem">' +
+            '<button class="simge-btn" data-eylem="duzenle" type="button" title="Düzenle">✎</button>' +
+            '<button class="simge-btn sil" data-eylem="sil" type="button" title="Sil">🗑</button>' +
+          "</td>" +
+        "</tr>"
+      );
+    }).join("");
+  }
+
+  function soforModalAc(id) {
+    soforForm.reset();
+    document.querySelectorAll("#sofor-form .alan-form").forEach(function (a) { a.classList.remove("gecersiz"); });
+
+    if (id) {
+      var kayit = soforVerisi.find(function (s) { return s.id === id; });
+      if (!kayit) return;
+      el("sofor-modal-baslik").textContent = "Şoförü Düzenle";
+      el("sofor-id").value = kayit.id;
+      el("s-ad").value = kayit.adSoyad;
+      el("s-telefon").value = kayit.telefon || "";
+    } else {
+      el("sofor-modal-baslik").textContent = "Yeni Şoför Ekle";
+      el("sofor-id").value = "";
+    }
+    soforModal.classList.add("acik");
+    el("s-ad").focus();
+  }
+  function soforModalKapat() { soforModal.classList.remove("acik"); }
+
+  function soforFormHatalariUygula(hatalar) {
+    document.querySelectorAll("#sofor-form .alan-form").forEach(function (a) { a.classList.remove("gecersiz"); });
+    var ilk = null;
+    (hatalar || []).forEach(function (alanAdi) {
+      if (alanAdi !== "adSoyad") return;
+      var girdi = el("s-ad");
+      var sarici = girdi.closest(".alan-form");
+      if (sarici) { sarici.classList.add("gecersiz"); ilk = girdi; }
+    });
+    if (ilk) ilk.focus();
+  }
+
+  function baglaSoforOlaylari() {
+    var ekleBtn = el("sofor-ekle-btn");
+    if (!ekleBtn) return;
+    ekleBtn.addEventListener("click", function () { soforModalAc(null); });
+
+    el("sofor-tablo-govde").addEventListener("click", function (e) {
+      var tr = e.target.closest("tr[data-id]");
+      if (!tr) return;
+      var id = tr.getAttribute("data-id");
+      var btn = e.target.closest("button[data-eylem]");
+      if (!btn) return;
+      var eylem = btn.getAttribute("data-eylem");
+      if (eylem === "duzenle") soforModalAc(id);
+      if (eylem === "sil") {
+        var kayit = soforVerisi.find(function (s) { return s.id === id; });
+        if (!kayit) return;
+        if (!window.confirm(kayit.adSoyad + " şoförler listesinden silinsin mi? Geçmiş tur kayıtları etkilenmez.")) return;
+        apiGonder("/api/soforler/" + id, "DELETE").then(function (sonuc) {
+          if (sonuc.durum === 200) { veriYenile(); bildirimGoster("Şoför silindi.", "sil"); }
+          else bildirimGoster((sonuc.veri && sonuc.veri.mesaj) || "Silinemedi.", "sil");
+        });
+      }
+    });
+
+    soforForm.addEventListener("submit", function (e) {
+      e.preventDefault();
+      var kaydetBtn = el("sofor-kaydet-btn");
+      kaydetBtn.disabled = true; kaydetBtn.textContent = "Kaydediliyor…";
+
+      var govde = { adSoyad: el("s-ad").value.trim(), telefon: el("s-telefon").value.trim() };
+      var mevcutId = el("sofor-id").value;
+      var istek = mevcutId ? apiGonder("/api/soforler/" + mevcutId, "PUT", govde) : apiGonder("/api/soforler", "POST", govde);
+
+      istek.then(function (sonuc) {
+        kaydetBtn.disabled = false; kaydetBtn.textContent = "Kaydet";
+        if (sonuc.durum === 200 || sonuc.durum === 201) {
+          soforModalKapat();
+          veriYenile();
+          bildirimGoster(mevcutId ? "Şoför güncellendi." : "Yeni şoför eklendi.");
+          return;
+        }
+        if (sonuc.durum === 422) {
+          soforFormHatalariUygula(sonuc.veri.hatalar);
+          bildirimGoster("Lütfen işaretli alanları kontrol edin.", "sil");
+          return;
+        }
+        bildirimGoster((sonuc.veri && sonuc.veri.mesaj) || "Bir hata oluştu.", "sil");
+      }).catch(function () {
+        kaydetBtn.disabled = false; kaydetBtn.textContent = "Kaydet";
+      });
+    });
+  }
+
+  /* =========================================================
+     KİRALAMA / TUR FORMLARINDAKİ ARAÇ-ŞOFÖR SEÇİCİLER
+     ========================================================= */
+
+  function aracSecicileriDoldur() {
+    var liste = aracVerisi.slice().sort(function (a, b) { return a.plaka.localeCompare(b.plaka, "tr"); });
+    var secenekHtml = liste.map(function (a) {
+      return '<option value="' + escapeHTML(a.id) + '">' + escapeHTML(a.plaka) + " — " + escapeHTML(a.marka) + " " + escapeHTML(a.model) + " (" + escapeHTML(a.yil) + ")</option>";
+    }).join("");
+
+    [el("k-arac-sec"), el("t-arac-sec")].forEach(function (secim) {
+      if (!secim) return;
+      var oncekiDeger = secim.value;
+      secim.innerHTML = '<option value="">— Listede yok / elle gir —</option>' + secenekHtml;
+      if (liste.some(function (a) { return a.id === oncekiDeger; })) secim.value = oncekiDeger;
+    });
+
+    var soforListe = soforVerisi.slice().sort(function (a, b) { return a.adSoyad.localeCompare(b.adSoyad, "tr"); });
+    var soforSecenekHtml = soforListe.map(function (s) {
+      return '<option value="' + escapeHTML(s.id) + '">' + escapeHTML(s.adSoyad) + "</option>";
+    }).join("");
+    var soforSecim = el("t-sofor-sec");
+    if (soforSecim) {
+      var oncekiSoforDeger = soforSecim.value;
+      soforSecim.innerHTML = '<option value="">— Listede yok / elle gir —</option>' + soforSecenekHtml;
+      if (soforListe.some(function (s) { return s.id === oncekiSoforDeger; })) soforSecim.value = oncekiSoforDeger;
+    }
+  }
+
+  function baglaSeciciler() {
+    var kAracSec = el("k-arac-sec");
+    if (kAracSec) {
+      kAracSec.addEventListener("change", function () {
+        var arac = aracVerisi.find(function (a) { return a.id === kAracSec.value; });
+        var onizleme = el("k-arac-onizleme");
+        if (!arac) { onizleme.src = "img/arac-yok.svg"; return; }
+        el("k-plaka").value = arac.plaka;
+        el("k-marka").value = arac.marka;
+        el("k-model").value = arac.model;
+        el("k-yil").value = arac.yil;
+        onizleme.src = arac.fotoYolu ? arac.fotoYolu : "img/arac-yok.svg";
+      });
+    }
+
+    var tAracSec = el("t-arac-sec");
+    if (tAracSec) {
+      tAracSec.addEventListener("change", function () {
+        var arac = aracVerisi.find(function (a) { return a.id === tAracSec.value; });
+        var onizleme = el("t-arac-onizleme");
+        if (!arac) { onizleme.src = "img/arac-yok.svg"; return; }
+        el("t-arac").value = arac.plaka + " — " + arac.marka + " " + arac.model;
+        onizleme.src = arac.fotoYolu ? arac.fotoYolu : "img/arac-yok.svg";
+      });
+    }
+
+    var tSoforSec = el("t-sofor-sec");
+    if (tSoforSec) {
+      tSoforSec.addEventListener("change", function () {
+        var sofor = soforVerisi.find(function (s) { return s.id === tSoforSec.value; });
+        if (!sofor) return;
+        el("t-sofor").value = sofor.adSoyad;
+      });
+    }
+  }
+
+  /* ---------- Fotoğraf sıkıştırma (yüklemeden önce, tarayıcıda) ---------- */
+
+  function resimSikistir(dosya, maksGenislik, kalite) {
+    return new Promise(function (resolve, reject) {
+      var okuyucu = new FileReader();
+      okuyucu.onerror = function () { reject(new Error("okuma_hatasi")); };
+      okuyucu.onload = function () {
+        var img = new Image();
+        img.onerror = function () { reject(new Error("resim_hatasi")); };
+        img.onload = function () {
+          var olcek = Math.min(1, maksGenislik / img.width);
+          var genislik = Math.round(img.width * olcek);
+          var yukseklik = Math.round(img.height * olcek);
+          var tuval = document.createElement("canvas");
+          tuval.width = genislik; tuval.height = yukseklik;
+          var ctx = tuval.getContext("2d");
+          ctx.drawImage(img, 0, 0, genislik, yukseklik);
+          resolve(tuval.toDataURL("image/jpeg", kalite));
+        };
+        img.src = okuyucu.result;
+      };
+      okuyucu.readAsDataURL(dosya);
     });
   }
 

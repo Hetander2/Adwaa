@@ -31,6 +31,7 @@
       <button class="nav-oge" data-bolum="takvim" type="button"><span class="isik" aria-hidden="true"></span>Takvim</button>
       <button class="nav-oge" data-bolum="kiralamalar" type="button"><span class="isik" aria-hidden="true"></span>Araç Kiralamaları</button>
       <button class="nav-oge" data-bolum="turlar" type="button"><span class="isik" aria-hidden="true"></span>Tur Rezervasyonları</button>
+      <button class="nav-oge" data-bolum="araclar" type="button"><span class="isik" aria-hidden="true"></span>Araçlar</button>
     </nav>
 
     <div class="yan-cubuk-alt">
@@ -205,6 +206,40 @@
       </div>
     </section>
 
+    <!-- ARAÇLAR -->
+    <section id="bolum-araclar" class="bolum" hidden>
+      <div class="ust-serit">
+        <h1>Araçlar</h1>
+        <button class="ekle-btn altin" id="arac-ekle-btn" type="button">+ Araç Ekle</button>
+      </div>
+
+      <div class="panel-kart">
+        <div class="panel-baslik-satiri"><h2>Şirket Araçları</h2></div>
+        <div class="arac-izgara" id="arac-izgara"></div>
+        <div id="arac-bos-durum" class="bos-durum" hidden>
+          <strong>Henüz araç eklenmedi</strong>
+          "+ Araç Ekle" ile filonuzu kaydedin; sonra kiralama ve tur eklerken listeden seçebilirsiniz.
+        </div>
+      </div>
+
+      <div class="panel-kart" style="margin-top:16px;">
+        <div class="panel-baslik-satiri">
+          <h2>Şoförler</h2>
+          <button class="ekle-btn" id="sofor-ekle-btn" type="button">+ Şoför Ekle</button>
+        </div>
+        <div class="tablo-sarici">
+          <table>
+            <thead><tr><th>Ad Soyad</th><th>Telefon</th><th></th></tr></thead>
+            <tbody id="sofor-tablo-govde"><tr><td colspan="3" class="yukleniyor">Yükleniyor…</td></tr></tbody>
+          </table>
+        </div>
+        <div id="sofor-bos-durum" class="bos-durum" hidden>
+          <strong>Henüz şoför eklenmedi</strong>
+          "+ Şoför Ekle" ile ekleyin; tur eklerken listeden seçebilirsiniz.
+        </div>
+      </div>
+    </section>
+
   </main>
 </div>
 
@@ -219,6 +254,16 @@
       <input type="hidden" id="kiralama-id">
       <div class="modal-govde">
         <div class="form-izgara">
+          <div class="alan-form tam">
+            <label for="k-arac-sec">Filodan Araç Seç</label>
+            <div class="arac-secici">
+              <img id="k-arac-onizleme" class="arac-onizleme-foto" src="img/arac-yok.svg" alt="">
+              <select id="k-arac-sec">
+                <option value="">— Listede yok / elle gir —</option>
+              </select>
+            </div>
+            <span class="yardim">Filodan seçtiğinizde plaka/marka/model/yıl otomatik doldurulur.</span>
+          </div>
           <div class="alan-form">
             <label for="k-plaka">Plaka *</label>
             <input type="text" id="k-plaka" placeholder="61 AB 123" required>
@@ -308,6 +353,21 @@
             <span class="hata">Güzergah zorunludur.</span>
           </div>
           <div class="alan-form">
+            <label for="t-arac-sec">Filodan Araç Seç</label>
+            <div class="arac-secici">
+              <img id="t-arac-onizleme" class="arac-onizleme-foto" src="img/arac-yok.svg" alt="">
+              <select id="t-arac-sec">
+                <option value="">— Listede yok / elle gir —</option>
+              </select>
+            </div>
+          </div>
+          <div class="alan-form">
+            <label for="t-sofor-sec">Şoförlerden Seç</label>
+            <select id="t-sofor-sec">
+              <option value="">— Listede yok / elle gir —</option>
+            </select>
+          </div>
+          <div class="alan-form">
             <label for="t-arac">Araç *</label>
             <input type="text" id="t-arac" placeholder="Plaka veya araç açıklaması" required>
             <span class="hata">Araç bilgisi zorunludur.</span>
@@ -350,6 +410,87 @@
       <div class="modal-alt">
         <button type="button" class="vazgec-btn" data-kapat="tur-modal">Vazgeç</button>
         <button type="submit" class="kaydet-btn" id="tur-kaydet-btn">Kaydet</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ARAÇ EKLE/DÜZENLE MODAL -->
+<div class="modal-katman" id="arac-modal">
+  <div class="modal-kutu" role="dialog" aria-modal="true" aria-labelledby="arac-modal-baslik">
+    <div class="modal-baslik">
+      <h3 id="arac-modal-baslik">Yeni Araç Ekle</h3>
+      <button class="modal-kapat" type="button" data-kapat="arac-modal" aria-label="Kapat">✕</button>
+    </div>
+    <form id="arac-form" novalidate>
+      <input type="hidden" id="arac-id">
+      <div class="modal-govde">
+        <div class="form-izgara">
+          <div class="alan-form tam">
+            <label for="a-foto-girdi">Fotoğraf</label>
+            <div class="foto-yukleme">
+              <img id="a-foto-onizleme" class="foto-onizleme" src="img/arac-yok.svg" alt="">
+              <div>
+                <input type="file" id="a-foto-girdi" accept="image/png,image/jpeg,image/webp">
+                <span class="yardim">İsteğe bağlı. Yüklerken otomatik küçültülür.</span>
+              </div>
+            </div>
+          </div>
+          <div class="alan-form">
+            <label for="a-plaka">Plaka *</label>
+            <input type="text" id="a-plaka" placeholder="61 AB 123" required>
+            <span class="hata">Plaka zorunludur.</span>
+          </div>
+          <div class="alan-form">
+            <label for="a-marka">Marka *</label>
+            <input type="text" id="a-marka" placeholder="Renault" required>
+            <span class="hata">Marka zorunludur.</span>
+          </div>
+          <div class="alan-form">
+            <label for="a-model">Model *</label>
+            <input type="text" id="a-model" placeholder="Clio" required>
+            <span class="hata">Model zorunludur.</span>
+          </div>
+          <div class="alan-form">
+            <label for="a-yil">Model Yılı *</label>
+            <input type="number" id="a-yil" min="1990" max="2035" placeholder="2023" required>
+            <span class="hata">Geçerli bir yıl girin.</span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-alt">
+        <button type="button" class="vazgec-btn" data-kapat="arac-modal">Vazgeç</button>
+        <button type="submit" class="kaydet-btn" id="arac-kaydet-btn">Kaydet</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ŞOFÖR EKLE/DÜZENLE MODAL -->
+<div class="modal-katman" id="sofor-modal">
+  <div class="modal-kutu" role="dialog" aria-modal="true" aria-labelledby="sofor-modal-baslik">
+    <div class="modal-baslik">
+      <h3 id="sofor-modal-baslik">Yeni Şoför Ekle</h3>
+      <button class="modal-kapat" type="button" data-kapat="sofor-modal" aria-label="Kapat">✕</button>
+    </div>
+    <form id="sofor-form" novalidate>
+      <input type="hidden" id="sofor-id">
+      <div class="modal-govde">
+        <div class="form-izgara">
+          <div class="alan-form tam">
+            <label for="s-ad">Ad Soyad *</label>
+            <input type="text" id="s-ad" placeholder="Ad Soyad" required>
+            <span class="hata">Ad soyad zorunludur.</span>
+          </div>
+          <div class="alan-form tam">
+            <label for="s-telefon">Telefon</label>
+            <input type="tel" id="s-telefon" placeholder="05xx xxx xx xx">
+          </div>
+        </div>
+      </div>
+      <div class="modal-alt">
+        <button type="button" class="vazgec-btn" data-kapat="sofor-modal">Vazgeç</button>
+        <button type="submit" class="kaydet-btn" id="sofor-kaydet-btn">Kaydet</button>
       </div>
     </form>
   </div>

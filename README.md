@@ -26,6 +26,8 @@ adwaa-yerel/
     app.js                    → Panel mantığı (liste/filtre/takvim/CRUD)
     img/adwaa-logo.png         → Logonuz (gönderdiğiniz görselden işlendi)
     img/favicon.png             → Sekme simgesi
+    img/arac-yok.svg             → Fotoğrafı olmayan araçlar için yer tutucu
+    img/araclar/                  → Yüklediğiniz araç fotoğrafları (ilk fotoğraf eklendiğinde oluşur)
 ```
 
 ## Kurulum ve çalıştırma
@@ -74,6 +76,16 @@ Aynı komutla ek yönetici hesapları da oluşturabilirsiniz.
   araç dönüşü, tur gidişi ve tur dönüşü olduğunu renkli etiketlerle görebilir,
   bir güne tıklayarak o günün tüm işlemlerinin detayını alttaki panelde
   görebilirsiniz.
+- **Araçlar sekmesi:** Şirket araçlarınızı (fotoğraf, plaka, marka, model,
+  yıl) bir kere kaydedin — kiralama veya tur eklerken artık "Filodan Araç
+  Seç" listesinden seçmeniz yeterli, plaka/marka/model/yıl otomatik
+  doldurulur. Aynı sekmede bir "Şoförler" listesi de var; tur eklerken
+  şoförü de listeden seçebilirsiniz. Her araç kartında o an "Müsait" mi yoksa
+  "Dışarıda" mı olduğu da görünür (devam eden bir kiralama/tur'da o plaka
+  geçiyorsa "Dışarıda" yazar). Fotoğraflar yüklenirken tarayıcıda otomatik
+  küçültülüp sıkıştırılır, `public/img/araclar/` klasöründe saklanır. Bir
+  aracı veya şoförü filodan silmek, o kişi/plakanın geçtiği geçmiş
+  kiralama/tur kayıtlarını etkilemez (onlar kendi bilgilerini ayrıca tutar).
 
 ## Güvenlik — gerçekte ne değişti, ne değişmedi
 
@@ -119,6 +131,6 @@ altında tutun.
   bilgisayarların **aynı Wi-Fi/ağda** olduğundan emin olun.
 - **Şifremi unuttum:** `node sifre-degistir.js` çalıştırıp aynı kullanıcı
   adıyla yeni bir şifre belirleyin.
-- **Port 3000 kullanımda hatası:** Pansüden önce `set PORT=3001` (Windows)
+- **Port 3000 kullanımda hatası:** Başlatmadan önce `set PORT=3001` (Windows)
   veya `PORT=3001 node server.js` (Mac/Linux) ile farklı bir port
   belirtebilirsiniz.

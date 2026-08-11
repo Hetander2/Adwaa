@@ -105,6 +105,16 @@ function dbIlkKurulum() {
         baslangic: tarihEkle(-2), bitis: tarihEkle(-2), fiyat: 3200, paraBirimi: "TRY",
         musteri: "Grup — Karadeniz Turu", tamamlandi: true, olusturulma: Date.now() - 2000
       }
+    ],
+    araclar: [
+      { id: "arac_seed_1", plaka: "61 AB 123", marka: "Renault", model: "Clio", yil: 2023, fotoYolu: null, olusturulma: Date.now() },
+      { id: "arac_seed_2", plaka: "61 CD 456", marka: "Fiat", model: "Egea", yil: 2022, fotoYolu: null, olusturulma: Date.now() - 1000 },
+      { id: "arac_seed_3", plaka: "61 EF 789", marka: "Dacia", model: "Duster", yil: 2024, fotoYolu: null, olusturulma: Date.now() - 2000 }
+    ],
+    soforler: [
+      { id: "sofor_seed_1", adSoyad: "Hasan Öz", telefon: "0555 000 00 01", olusturulma: Date.now() },
+      { id: "sofor_seed_2", adSoyad: "Kemal Aydın", telefon: "0555 000 00 02", olusturulma: Date.now() - 1000 },
+      { id: "sofor_seed_3", adSoyad: "Serkan Kurt", telefon: "0555 000 00 03", olusturulma: Date.now() - 2000 }
     ]
   };
 
@@ -246,6 +256,54 @@ function turDogrula(v) {
   return hatalar;
 }
 
+function aracDogrula(v) {
+  const hatalar = [];
+  if (!metinMi(v.plaka)) hatalar.push("plaka");
+  if (!metinMi(v.marka)) hatalar.push("marka");
+  if (!metinMi(v.model)) hatalar.push("model");
+  if (!(Number.isInteger(v.yil) && v.yil >= 1990 && v.yil <= 2035)) hatalar.push("yil");
+  return hatalar;
+}
+
+function soforDogrula(v) {
+  const hatalar = [];
+  if (!metinMi(v.adSoyad)) hatalar.push("adSoyad");
+  return hatalar;
+}
+
+/* ------------------------------------------------------- *
+ *  Araç fotoğrafı kaydetme (base64 data URL -> dosya)
+ *  Ek paket gerekmez; multipart/form-data yerine istemci
+ *  fotoğrafı sıkıştırıp base64 olarak JSON içinde gönderir.
+ * ------------------------------------------------------- */
+
+const ARAC_FOTO_DIZIN = path.join(PUBLIC_DIZIN, "img", "araclar");
+const IZINLI_FOTO_MIME = { "image/jpeg": ".jpg", "image/png": ".png", "image/webp": ".webp" };
+
+function base64FotoKaydet(dataUrl, eskiFotoYolu) {
+  const eslesme = /^data:(image\/(?:jpeg|png|webp));base64,([A-Za-z0-9+/=]+)$/.exec(dataUrl || "");
+  if (!eslesme) return { hata: "gecersiz_foto" };
+
+  const uzanti = IZINLI_FOTO_MIME[eslesme[1]];
+  const veri = Buffer.from(eslesme[2], "base64");
+  if (veri.length > 3.5 * 1024 * 1024) return { hata: "foto_cok_buyuk" };
+
+  if (!fs.existsSync(ARAC_FOTO_DIZIN)) fs.mkdirSync(ARAC_FOTO_DIZIN, { recursive: true });
+
+  const dosyaAdi = "arac_" + Date.now().toString(36) + "_" + crypto.randomBytes(4).toString("hex") + uzanti;
+  fs.writeFileSync(path.join(ARAC_FOTO_DIZIN, dosyaAdi), veri);
+
+  if (eskiFotoYolu) fotoSilGuvenli(eskiFotoYolu);
+  return { yol: "img/araclar/" + dosyaAdi };
+}
+
+function fotoSilGuvenli(goreliYol) {
+  if (!goreliYol || typeof goreliYol !== "string") return;
+  const tamYol = path.normalize(path.join(PUBLIC_DIZIN, goreliYol));
+  if (!tamYol.startsWith(ARAC_FOTO_DIZIN)) return; // güvenlik: yalnızca araç foto klasörü
+  fs.unlink(tamYol, function () { /* dosya zaten yoksa sorun değil */ });
+}
+
 /* ------------------------------------------------------- *
  *  HTTP yardımcıları
  * ------------------------------------------------------- */
@@ -273,7 +331,7 @@ function govdeOku(req) {
   return new Promise(function (resolve, reject) {
     let parcalar = [];
     let boyut = 0;
-    const MAKS_BOYUT = 2 * 1024 * 1024;
+    const MAKS_BOYUT = 4 * 1024 * 1024; // araç fotoğrafları için yükseltildi
     req.on("data", function (parca) {
       boyut += parca.length;
       if (boyut > MAKS_BOYUT) {
@@ -313,6 +371,7 @@ const MIME_TURLERI = {
   ".png": "image/png",
   ".jpg": "image/jpeg",
   ".jpeg": "image/jpeg",
+  ".webp": "image/webp",
   ".svg": "image/svg+xml",
   ".ico": "image/x-icon",
   ".txt": "text/plain; charset=utf-8"
@@ -509,6 +568,130 @@ async function apiYonlendir(req, res, url) {
     return jsonGonder(res, 200, kayit);
   }
 
+  /* ---- Araçlar ---- */
+
+  if (yol === "/api/araclar" && metod === "GET") {
+    const db = dbOku();
+    return jsonGonder(res, 200, db.araclar || []);
+  }
+
+  if (yol === "/api/araclar" && metod === "POST") {
+    let govde;
+    try { govde = await govdeOku(req); } catch (e) {
+      const mesaj = e.message === "govde_cok_buyuk" ? "Fotoğraf çok büyük." : "Geçersiz istek.";
+      return jsonGonder(res, 400, { basarili: false, mesaj: mesaj });
+    }
+    const kayit = aracVeriHazirla(govde);
+    const hatalar = aracDogrula(kayit);
+    if (hatalar.length) return jsonGonder(res, 422, { basarili: false, hatalar: hatalar });
+
+    if (govde.fotoBase64) {
+      const sonuc = base64FotoKaydet(govde.fotoBase64, null);
+      if (sonuc.hata) return jsonGonder(res, 422, { basarili: false, hatalar: ["foto"] });
+      kayit.fotoYolu = sonuc.yol;
+    } else {
+      kayit.fotoYolu = null;
+    }
+
+    const db = dbOku();
+    if (!db.araclar) db.araclar = [];
+    kayit.id = "arac_" + Date.now().toString(36) + "_" + crypto.randomBytes(4).toString("hex");
+    kayit.olusturulma = Date.now();
+    db.araclar.push(kayit);
+    dbYaz(db);
+    return jsonGonder(res, 201, kayit);
+  }
+
+  let aracEslesme = yol.match(/^\/api\/araclar\/([a-zA-Z0-9_]+)$/);
+  if (aracEslesme && (metod === "PUT" || metod === "DELETE")) {
+    const id = aracEslesme[1];
+    const db = dbOku();
+    if (!db.araclar) db.araclar = [];
+    const index = db.araclar.findIndex(function (a) { return a.id === id; });
+    if (index === -1) return jsonGonder(res, 404, { basarili: false, mesaj: "Araç bulunamadı." });
+
+    if (metod === "DELETE") {
+      fotoSilGuvenli(db.araclar[index].fotoYolu);
+      db.araclar.splice(index, 1);
+      dbYaz(db);
+      return jsonGonder(res, 200, { basarili: true });
+    }
+
+    let govde;
+    try { govde = await govdeOku(req); } catch (e) {
+      const mesaj = e.message === "govde_cok_buyuk" ? "Fotoğraf çok büyük." : "Geçersiz istek.";
+      return jsonGonder(res, 400, { basarili: false, mesaj: mesaj });
+    }
+    const kayit = aracVeriHazirla(govde);
+    const hatalar = aracDogrula(kayit);
+    if (hatalar.length) return jsonGonder(res, 422, { basarili: false, hatalar: hatalar });
+
+    const eskiKayit = db.araclar[index];
+    if (govde.fotoBase64) {
+      const sonuc = base64FotoKaydet(govde.fotoBase64, eskiKayit.fotoYolu);
+      if (sonuc.hata) return jsonGonder(res, 422, { basarili: false, hatalar: ["foto"] });
+      kayit.fotoYolu = sonuc.yol;
+    } else {
+      kayit.fotoYolu = eskiKayit.fotoYolu; // fotoğraf değiştirilmedi
+    }
+
+    kayit.id = id;
+    kayit.olusturulma = eskiKayit.olusturulma;
+    db.araclar[index] = kayit;
+    dbYaz(db);
+    return jsonGonder(res, 200, kayit);
+  }
+
+  /* ---- Şoförler ---- */
+
+  if (yol === "/api/soforler" && metod === "GET") {
+    const db = dbOku();
+    return jsonGonder(res, 200, db.soforler || []);
+  }
+
+  if (yol === "/api/soforler" && metod === "POST") {
+    let govde;
+    try { govde = await govdeOku(req); } catch (e) { return jsonGonder(res, 400, { basarili: false, mesaj: "Geçersiz istek." }); }
+    const kayit = soforVeriHazirla(govde);
+    const hatalar = soforDogrula(kayit);
+    if (hatalar.length) return jsonGonder(res, 422, { basarili: false, hatalar: hatalar });
+
+    const db = dbOku();
+    if (!db.soforler) db.soforler = [];
+    kayit.id = "sofor_" + Date.now().toString(36) + "_" + crypto.randomBytes(4).toString("hex");
+    kayit.olusturulma = Date.now();
+    db.soforler.push(kayit);
+    dbYaz(db);
+    return jsonGonder(res, 201, kayit);
+  }
+
+  const soforEslesme = yol.match(/^\/api\/soforler\/([a-zA-Z0-9_]+)$/);
+  if (soforEslesme && (metod === "PUT" || metod === "DELETE")) {
+    const id = soforEslesme[1];
+    const db = dbOku();
+    if (!db.soforler) db.soforler = [];
+    const index = db.soforler.findIndex(function (s) { return s.id === id; });
+    if (index === -1) return jsonGonder(res, 404, { basarili: false, mesaj: "Şoför bulunamadı." });
+
+    if (metod === "DELETE") {
+      db.soforler.splice(index, 1);
+      dbYaz(db);
+      return jsonGonder(res, 200, { basarili: true });
+    }
+
+    let govde;
+    try { govde = await govdeOku(req); } catch (e) { return jsonGonder(res, 400, { basarili: false, mesaj: "Geçersiz istek." }); }
+    const kayit = soforVeriHazirla(govde);
+    const hatalar = soforDogrula(kayit);
+    if (hatalar.length) return jsonGonder(res, 422, { basarili: false, hatalar: hatalar });
+
+    kayit.id = id;
+    kayit.olusturulma = db.soforler[index].olusturulma;
+    db.soforler[index] = kayit;
+    dbYaz(db);
+    return jsonGonder(res, 200, kayit);
+  }
+
   return jsonGonder(res, 404, { basarili: false, mesaj: "Uç bulunamadı." });
 }
 
@@ -541,6 +724,22 @@ function turVeriHazirla(v) {
     paraBirimi: v.paraBirimi,
     musteri: typeof v.musteri === "string" ? v.musteri.trim() : "",
     tamamlandi: !!v.tamamlandi
+  };
+}
+
+function aracVeriHazirla(v) {
+  return {
+    plaka: typeof v.plaka === "string" ? v.plaka.trim() : "",
+    marka: typeof v.marka === "string" ? v.marka.trim() : "",
+    model: typeof v.model === "string" ? v.model.trim() : "",
+    yil: Number(v.yil)
+  };
+}
+
+function soforVeriHazirla(v) {
+  return {
+    adSoyad: typeof v.adSoyad === "string" ? v.adSoyad.trim() : "",
+    telefon: typeof v.telefon === "string" ? v.telefon.trim() : ""
   };
 }
 
