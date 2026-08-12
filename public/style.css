@@ -259,26 +259,28 @@ tbody tr.tamamlandi-satir .metin-vurgu{ text-decoration: line-through; text-deco
 
 /* ---------------- Tutar (fiyat + para birimi) ---------------- */
 
-.tutar-grup{ display: flex; gap: 8px; }
+.tutar-grup{ display: flex; gap: 8px; min-width: 0; }
 .tutar-grup input{ flex: 1 1 auto; min-width: 0; }
-.tutar-grup select{ flex: 0 0 84px; }
+.tutar-grup select{ flex: 0 0 84px; min-width: 0; }
 
 /* ---------------- Modal ---------------- */
 
 .modal-katman{ position: fixed; inset: 0; background: rgba(10,22,28,0.55); backdrop-filter: blur(2px); display: none; align-items: center; justify-content: center; padding: 20px; z-index: 50; }
 .modal-katman.acik{ display: flex; }
-.modal-kutu{ width: 100%; max-width: 560px; max-height: 90vh; overflow-y: auto; background: var(--surface); border-radius: var(--radius-lg); box-shadow: var(--shadow-modal); }
+.modal-kutu{ width: 100%; max-width: 600px; max-height: 90vh; overflow-y: auto; overflow-x: hidden; background: var(--surface); border-radius: var(--radius-lg); box-shadow: var(--shadow-modal); }
+.modal-kutu.genis{ max-width: 760px; }
 .modal-baslik{ display: flex; align-items: center; justify-content: space-between; padding: 18px 22px; border-bottom: 1px solid var(--line); }
 .modal-baslik h3{ font-size: 16px; color: var(--ink-navy); }
 .modal-kapat{ width: 30px; height: 30px; border-radius: 8px; border: none; background: transparent; color: var(--ink-muted); font-size: 18px; cursor: pointer; }
 .modal-kapat:hover{ background: #F1F3F0; color: var(--ink); }
 .modal-govde{ padding: 20px 22px; }
-.form-izgara{ display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.form-izgara{ display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 14px; }
 .form-izgara .tam{ grid-column: 1 / -1; }
-.alan-form{ display: flex; flex-direction: column; gap: 6px; }
+.alan-form{ display: flex; flex-direction: column; gap: 6px; min-width: 0; }
 .alan-form label{ font-size: 12px; font-weight: 600; color: var(--ink-muted); }
 .alan-form input, .alan-form select, .alan-form textarea{
   padding: 9px 11px; border-radius: var(--radius-sm); border: 1px solid var(--line); font-size: 13.5px; color: var(--ink); background: var(--surface);
+  width: 100%; max-width: 100%; min-width: 0;
 }
 .alan-form input:focus, .alan-form select:focus, .alan-form textarea:focus{ border-color: var(--gold-dim); }
 .alan-form .yardim{ font-size: 11px; color: var(--ink-faint); }
@@ -350,19 +352,54 @@ tbody tr.tamamlandi-satir .metin-vurgu{ text-decoration: line-through; text-deco
 
 /* ---------------- Araçlar & şoför seçiciler ---------------- */
 
-.arac-secici{ display: flex; align-items: center; gap: 10px; }
+.arac-secici{ display: flex; align-items: center; gap: 10px; min-width: 0; }
 .arac-onizleme-foto{
   width: 48px; height: 48px; border-radius: 8px; object-fit: cover;
   border: 1px solid var(--line); background: var(--paper); flex: none;
 }
-.arac-secici select{ flex: 1 1 auto; }
+.arac-secici select{ flex: 1 1 auto; min-width: 0; }
 
-.foto-yukleme{ display: flex; align-items: center; gap: 14px; }
+.foto-yukleme{ display: flex; align-items: center; gap: 14px; min-width: 0; }
 .foto-onizleme{
   width: 88px; height: 66px; border-radius: 8px; object-fit: cover;
   border: 1px solid var(--line); background: var(--paper); flex: none;
 }
-.foto-yukleme input[type="file"]{ font-size: 12.5px; max-width: 220px; }
+.foto-yukleme input[type="file"]{ font-size: 12.5px; max-width: 100%; }
+.foto-yukleme > div{ min-width: 0; }
+
+.kategori-secim{ display: flex; flex-direction: column; gap: 8px; margin-top: 2px; }
+.onay-etiket{ display: flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 400; color: var(--ink); cursor: pointer; }
+.onay-etiket input{ width: auto; accent-color: var(--gold-dim); }
+.arac-kart-rozetler{ display: flex; gap: 5px; flex-wrap: wrap; margin-top: 2px; }
+.arac-kategori-rozet{ font-size: 10.5px; font-weight: 600; padding: 2px 7px; border-radius: 999px; background: var(--paper); color: var(--ink-muted); border: 1px solid var(--line); }
+
+/* ---------------- Kiralama Detayı modalı ---------------- */
+
+.detay-blok{ padding-bottom: 18px; margin-bottom: 18px; border-bottom: 1px solid var(--line); }
+.detay-blok:last-child{ border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+.detay-blok h4{ font-size: 13px; color: var(--ink-navy); margin-bottom: 10px; }
+.detay-blok-baslik-satiri{ display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.detay-blok-baslik-satiri h4{ margin-bottom: 0; }
+.detay-izgara{ display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 10px 20px; }
+.detay-satir{ display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.detay-satir.tam{ grid-column: 1 / -1; }
+.detay-etiket{ font-size: 11px; font-weight: 600; color: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.03em; }
+.detay-deger{ font-size: 13.5px; color: var(--ink); word-break: break-word; }
+
+.kontrat-izgara{ display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 14px; }
+.kontrat-kutu{ border: 1px solid var(--line); border-radius: var(--radius-md); padding: 12px; min-width: 0; }
+.kontrat-baslik{ font-size: 12px; font-weight: 600; color: var(--ink-muted); margin-bottom: 8px; }
+.kontrat-onizleme{ width: 100%; max-height: 160px; object-fit: contain; border-radius: 8px; background: var(--paper); display: block; margin-bottom: 8px; }
+.kontrat-bos{ font-size: 12.5px; color: var(--ink-faint); background: var(--paper); border-radius: 8px; padding: 18px 10px; text-align: center; margin-bottom: 8px; }
+.kontrat-kutu input[type="file"]{ font-size: 12px; width: 100%; }
+
+.uzatma-satir{
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 10px 12px; border-radius: 8px; background: #FAFBF9; margin-bottom: 6px; font-size: 12.5px;
+}
+.uzatma-form{ display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 12px; margin-top: 12px; padding: 14px; border-radius: var(--radius-md); background: #FAFBF9; border: 1px dashed var(--line); }
+.uzatma-form .tam{ grid-column: 1 / -1; display: flex; gap: 10px; }
+.uzatma-onizleme{ grid-column: 1 / -1; font-size: 12.5px; color: var(--ink-muted); background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; }
 
 .arac-izgara{
   display: grid;
@@ -400,5 +437,21 @@ tbody tr.tamamlandi-satir .metin-vurgu{ text-decoration: line-through; text-deco
   .takvim-etiket{ display: none; }
   .takvim-gun-no{ font-size: 11px; }
   .arac-izgara{ grid-template-columns: 1fr 1fr; padding: 14px; }
+  .detay-izgara{ grid-template-columns: 1fr; }
+  .kontrat-izgara{ grid-template-columns: 1fr; }
+  .uzatma-form{ grid-template-columns: 1fr; }
+  .modal-kutu.genis{ max-width: 100%; }
   .foto-yukleme{ flex-direction: column; align-items: flex-start; }
+}
+
+@media (max-width: 480px){
+  .istatistik-izgara{ grid-template-columns: 1fr; }
+  .arac-izgara{ grid-template-columns: 1fr; }
+  .modal-katman{ padding: 8px; }
+  .modal-baslik{ padding: 14px 16px; }
+  .modal-govde{ padding: 14px 16px; }
+  .modal-alt{ padding: 12px 16px 16px; flex-wrap: wrap; }
+  .modal-alt button{ flex: 1 1 auto; }
+  .filtre-serit{ flex-direction: column; align-items: stretch; }
+  .filtre-serit input, .filtre-serit select{ width: 100%; }
 }

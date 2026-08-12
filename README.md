@@ -28,6 +28,7 @@ adwaa-yerel/
     img/favicon.png             → Sekme simgesi
     img/arac-yok.svg             → Fotoğrafı olmayan araçlar için yer tutucu
     img/araclar/                  → Yüklediğiniz araç fotoğrafları (ilk fotoğraf eklendiğinde oluşur)
+    img/kontratlar/                → Yüklediğiniz kontrat fotoğrafları (ilk fotoğraf eklendiğinde oluşur)
 ```
 
 ## Kurulum ve çalıştırma
@@ -86,6 +87,32 @@ Aynı komutla ek yönetici hesapları da oluşturabilirsiniz.
   küçültülüp sıkıştırılır, `public/img/araclar/` klasöründe saklanır. Bir
   aracı veya şoförü filodan silmek, o kişi/plakanın geçtiği geçmiş
   kiralama/tur kayıtlarını etkilemez (onlar kendi bilgilerini ayrıca tutar).
+- **Araç kategorisi (Kiralama / Tur):** Her araç eklenirken "Araç kiralamada
+  kullanılabilir" ve/veya "Turlarda kullanılabilir" olarak işaretlenir (en az
+  biri zorunlu). Kiralama formundaki "Filodan Araç Seç" listesi yalnızca
+  kiralama kategorisindeki araçları, tur formundaki liste ise yalnızca tur
+  kategorisindeki araçları gösterir — böylece bir minibüsü yanlışlıkla günlük
+  kiralamaya, bir günlük kiralık arabayı da tur listesine seçme riski kalmaz.
+- **Kiralama Detayı ekranı:** Kiralamalar listesindeki 🔎 butonuyla açılan
+  detay ekranında ödeme bilgisi (peşin / taksit ve taksit sayısı), kontrat
+  fotoğrafları ve uzatma geçmişi bir arada görünür. Temel bilgileri
+  değiştirmek için aynı ekrandaki "Temel Bilgileri Düzenle" butonu kullanılır.
+- **Ödeme türü:** Yeni kiralama eklerken/düzenlerken "Peşin" veya "Taksitli"
+  seçilir; taksitli seçilirse taksit sayısı da girilir. Bu bilgi Kiralama
+  Detayı ekranında görünür.
+- **Kontrat fotoğrafı (isteğe bağlı):** Kiralama Detayı ekranında kontratın
+  ön ve arka yüzü ayrı ayrı fotoğraflanıp yüklenebilir (telefondan doğrudan
+  kamerayla çekilebilir). Hangi taraf girilmemişse "Kontrat girilmedi" yazar;
+  girilen taraf küçük bir önizleme olarak görünür. Fotoğraflar
+  `public/img/kontratlar/` klasöründe saklanır.
+- **Kiralamayı uzatma:** Kiralama Detayı ekranındaki "+ Uzat" butonuyla yeni
+  bitiş tarihi ve günlük ekstra ücret girilir; sistem otomatik olarak ekstra
+  gün sayısını ve ekstra tutarı hesaplayıp kiralamanın toplam fiyatına ekler.
+  "Şu tarihten şu tarihe + şu tarihe kadar, günlük şu kadara, toplam şu kadar"
+  şeklindeki her uzatma, geçmişte kalıcı olarak listelenir (üzerine yazılmaz).
+- **Telefondan giriş:** Formlar artık dar ekranlarda da taşmadan, tam
+  sığacak şekilde düzenlendi; araç/kontrat fotoğrafı yüklerken telefonun
+  kamerası doğrudan açılabilir (bilgisayardan fotoğraf yüklemek yerine).
 
 ## Güvenlik — gerçekte ne değişti, ne değişmedi
 
@@ -117,10 +144,10 @@ Yine de bilmeniz gereken sınırlar:
 - Oturumlar bellekte tutulur; sunucu yeniden başlarsa herkes tekrar giriş
   yapar (veri kaybolmaz, sadece oturumlar sıfırlanır).
 
-**TC kimlik numarası KVKK kapsamında korunan bir kişisel veridir.** Düzenli
-yedek alın (`data/db.json` dosyasını periyodik olarak güvenli bir yere
-kopyalamanız yeterlidir) ve bu bilgisayara kimlerin erişebildiğini kontrol
-altında tutun.
+**TC kimlik numarası ve kontrat fotoğrafları KVKK kapsamında korunan kişisel
+verilerdir.** Düzenli yedek alın (`data/db.json` dosyasını ve `public/img/`
+klasörünü periyodik olarak güvenli bir yere kopyalamanız yeterlidir) ve bu
+bilgisayara kimlerin erişebildiğini kontrol altında tutun.
 
 ## Sorun giderme
 

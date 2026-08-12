@@ -262,7 +262,7 @@
                 <option value="">— Listede yok / elle gir —</option>
               </select>
             </div>
-            <span class="yardim">Filodan seçtiğinizde plaka/marka/model/yıl otomatik doldurulur.</span>
+            <span class="yardim">Yalnızca "Kiralama" kategorisindeki araçlar listelenir; seçtiğinizde plaka/marka/model/yıl otomatik doldurulur.</span>
           </div>
           <div class="alan-form">
             <label for="k-plaka">Plaka *</label>
@@ -306,6 +306,18 @@
             <span class="hata">Geçerli bir tutar girin.</span>
           </div>
           <div class="alan-form">
+            <label for="k-odeme-turu">Ödeme Türü *</label>
+            <select id="k-odeme-turu">
+              <option value="pesin">Peşin</option>
+              <option value="taksit">Taksitli</option>
+            </select>
+          </div>
+          <div class="alan-form" id="k-taksit-alani" hidden>
+            <label for="k-taksit-sayisi">Taksit Sayısı *</label>
+            <input type="number" id="k-taksit-sayisi" min="2" max="36" placeholder="Örn. 3">
+            <span class="hata">2-36 arası bir sayı girin.</span>
+          </div>
+          <div class="alan-form">
             <label for="k-telefon">Müşteri Telefonu</label>
             <input type="tel" id="k-telefon" placeholder="05xx xxx xx xx">
           </div>
@@ -336,6 +348,23 @@
   </div>
 </div>
 
+<!-- KİRALAMA DETAYI MODAL -->
+<div class="modal-katman" id="kiralama-detay-modal">
+  <div class="modal-kutu genis" role="dialog" aria-modal="true" aria-labelledby="kiralama-detay-baslik">
+    <div class="modal-baslik">
+      <h3 id="kiralama-detay-baslik">Kiralama Detayı</h3>
+      <button class="modal-kapat" type="button" data-kapat="kiralama-detay-modal" aria-label="Kapat">✕</button>
+    </div>
+    <div class="modal-govde">
+      <div id="kiralama-detay-icerik"></div>
+    </div>
+    <div class="modal-alt">
+      <button type="button" class="vazgec-btn" data-kapat="kiralama-detay-modal">Kapat</button>
+      <button type="button" class="kaydet-btn" id="kiralama-detay-duzenle-btn">Temel Bilgileri Düzenle</button>
+    </div>
+  </div>
+</div>
+
 <!-- TUR EKLE/DÜZENLE MODAL -->
 <div class="modal-katman" id="tur-modal">
   <div class="modal-kutu" role="dialog" aria-modal="true" aria-labelledby="tur-modal-baslik">
@@ -360,6 +389,7 @@
                 <option value="">— Listede yok / elle gir —</option>
               </select>
             </div>
+            <span class="yardim">Yalnızca "Tur" kategorisindeki araçlar listelenir.</span>
           </div>
           <div class="alan-form">
             <label for="t-sofor-sec">Şoförlerden Seç</label>
@@ -431,8 +461,8 @@
             <div class="foto-yukleme">
               <img id="a-foto-onizleme" class="foto-onizleme" src="img/arac-yok.svg" alt="">
               <div>
-                <input type="file" id="a-foto-girdi" accept="image/png,image/jpeg,image/webp">
-                <span class="yardim">İsteğe bağlı. Yüklerken otomatik küçültülür.</span>
+                <input type="file" id="a-foto-girdi" accept="image/png,image/jpeg,image/webp" capture="environment">
+                <span class="yardim">İsteğe bağlı. Telefondan doğrudan fotoğraf çekebilirsiniz; yüklerken otomatik küçültülür.</span>
               </div>
             </div>
           </div>
@@ -455,6 +485,14 @@
             <label for="a-yil">Model Yılı *</label>
             <input type="number" id="a-yil" min="1990" max="2035" placeholder="2023" required>
             <span class="hata">Geçerli bir yıl girin.</span>
+          </div>
+          <div class="alan-form tam" id="a-kategori-alani">
+            <label>Kullanım Alanı * <span class="yardim">(en az birini işaretleyin)</span></label>
+            <div class="kategori-secim">
+              <label class="onay-etiket"><input type="checkbox" id="a-kiralamaya-uygun"> Araç kiralamada kullanılabilir</label>
+              <label class="onay-etiket"><input type="checkbox" id="a-tura-uygun"> Turlarda kullanılabilir</label>
+            </div>
+            <span class="hata">En az bir kullanım alanı seçmelisiniz.</span>
           </div>
         </div>
       </div>
