@@ -71,27 +71,24 @@ function dbIlkKurulum() {
     kullanicilar: [{ kullaniciAdi: VARSAYILAN_KULLANICI, tuz, hash }],
     kiralamalar: [
       {
-        id: "kir_seed_1", plaka: "61 AB 123", marka: "Renault", model: "Clio", yil: 2023,
+        id: "kir_seed_1", plaka: "61 AB 123", model: "Clio", yil: 2023,
         baslangic: bugunISO(), bitis: tarihEkle(3), fiyat: 3600, paraBirimi: "TRY",
-        odemeTuru: "pesin", taksitSayisi: null,
-        musteriAd: "Mehmet Yılmaz", musteriTC: "12345678950", telefon: "0555 111 22 33",
-        not: "Havalimanından teslim.", kontratFotoOn: null, kontratFotoArka: null, uzatmalar: [],
+        musteriAd: "Mehmet Yılmaz", telefon: "0555 111 22 33",
+        not: "Havalimanından teslim.", uzatmalar: [],
         tamamlandi: false, olusturulma: Date.now()
       },
       {
-        id: "kir_seed_2", plaka: "61 CD 456", marka: "Fiat", model: "Egea", yil: 2022,
+        id: "kir_seed_2", plaka: "61 CD 456", model: "Egea", yil: 2022,
         baslangic: tarihEkle(-5), bitis: tarihEkle(-1), fiyat: 2800, paraBirimi: "TRY",
-        odemeTuru: "taksit", taksitSayisi: 2,
-        musteriAd: "Ayşe Kaya", musteriTC: "98765432150", telefon: "0532 222 33 44",
-        not: "", kontratFotoOn: null, kontratFotoArka: null, uzatmalar: [],
+        musteriAd: "Ayşe Kaya", telefon: "0532 222 33 44",
+        not: "", uzatmalar: [],
         tamamlandi: true, olusturulma: Date.now() - 1000
       },
       {
-        id: "kir_seed_3", plaka: "61 EF 789", marka: "Dacia", model: "Duster", yil: 2024,
+        id: "kir_seed_3", plaka: "61 EF 789", model: "Duster", yil: 2024,
         baslangic: tarihEkle(2), bitis: tarihEkle(9), fiyat: 210, paraBirimi: "USD",
-        odemeTuru: "pesin", taksitSayisi: null,
-        musteriAd: "Ali Demir", musteriTC: "11223344550", telefon: "0544 333 44 55",
-        not: "Uzungöl turu için kiralandı.", kontratFotoOn: null, kontratFotoArka: null, uzatmalar: [],
+        musteriAd: "Ali Demir", telefon: "0544 333 44 55",
+        not: "Uzungöl turu için kiralandı.", uzatmalar: [],
         tamamlandi: false, olusturulma: Date.now() - 2000
       }
     ],
@@ -209,25 +206,7 @@ function basarisizGirisKaydet(ip) {
 
 function girisBasariliSifirla(ip) { girisDenemeleri.delete(ip); }
 
-/* ------------------------------------------------------- *
- *  TC Kimlik No doğrulaması (resmî checksum algoritması)
- * ------------------------------------------------------- */
-
-function tcGecerliMi(tc) {
-  if (typeof tc !== "string" || !/^[1-9][0-9]{10}$/.test(tc)) return false;
-  const d = tc.split("").map(Number);
-  const tekToplam = d[0] + d[2] + d[4] + d[6] + d[8];
-  const ciftToplam = d[1] + d[3] + d[5] + d[7];
-  let d10 = ((tekToplam * 7) - ciftToplam) % 10;
-  if (d10 < 0) d10 += 10;
-  if (d10 !== d[9]) return false;
-  let ilk10Toplam = 0;
-  for (let i = 0; i < 10; i++) ilk10Toplam += d[i];
-  return (ilk10Toplam % 10) === d[10];
-}
-
 const PARA_BIRIMLERI = ["TRY", "USD"];
-const ODEME_TURLERI = ["pesin", "taksit"];
 
 /* ------------------------------------------------------- *
  *  Doğrulama yardımcıları
@@ -240,17 +219,13 @@ function pozitifSayiMi(v) { return typeof v === "number" && isFinite(v) && v >= 
 function kiralamaDogrula(v) {
   const hatalar = [];
   if (!metinMi(v.plaka)) hatalar.push("plaka");
-  if (!metinMi(v.marka)) hatalar.push("marka");
   if (!metinMi(v.model)) hatalar.push("model");
   if (!(Number.isInteger(v.yil) && v.yil >= 1990 && v.yil <= 2035)) hatalar.push("yil");
   if (!tarihMi(v.baslangic)) hatalar.push("baslangic");
   if (!tarihMi(v.bitis) || (tarihMi(v.baslangic) && v.bitis < v.baslangic)) hatalar.push("bitis");
   if (!pozitifSayiMi(v.fiyat)) hatalar.push("fiyat");
   if (PARA_BIRIMLERI.indexOf(v.paraBirimi) === -1) hatalar.push("paraBirimi");
-  if (ODEME_TURLERI.indexOf(v.odemeTuru) === -1) hatalar.push("odemeTuru");
-  if (v.odemeTuru === "taksit" && !(Number.isInteger(v.taksitSayisi) && v.taksitSayisi >= 2 && v.taksitSayisi <= 36)) hatalar.push("taksitSayisi");
   if (!metinMi(v.musteriAd)) hatalar.push("musteriAd");
-  if (!tcGecerliMi(v.musteriTC)) hatalar.push("musteriTC");
   return hatalar;
 }
 
@@ -490,8 +465,6 @@ async function apiYonlendir(req, res, url) {
     const db = dbOku();
     kayit.id = "kir_" + Date.now().toString(36) + "_" + crypto.randomBytes(4).toString("hex");
     kayit.olusturulma = Date.now();
-    kayit.kontratFotoOn = null;
-    kayit.kontratFotoArka = null;
     kayit.uzatmalar = [];
     db.kiralamalar.push(kayit);
     dbYaz(db);
@@ -506,8 +479,6 @@ async function apiYonlendir(req, res, url) {
     if (index === -1) return jsonGonder(res, 404, { basarili: false, mesaj: "Kayıt bulunamadı." });
 
     if (metod === "DELETE") {
-      fotoSilGuvenli(db.kiralamalar[index].kontratFotoOn);
-      fotoSilGuvenli(db.kiralamalar[index].kontratFotoArka);
       db.kiralamalar.splice(index, 1);
       dbYaz(db);
       return jsonGonder(res, 200, { basarili: true });
@@ -522,8 +493,6 @@ async function apiYonlendir(req, res, url) {
     const eskiKayit = db.kiralamalar[index];
     kayit.id = id;
     kayit.olusturulma = eskiKayit.olusturulma;
-    kayit.kontratFotoOn = eskiKayit.kontratFotoOn || null;
-    kayit.kontratFotoArka = eskiKayit.kontratFotoArka || null;
     kayit.uzatmalar = eskiKayit.uzatmalar || [];
     db.kiralamalar[index] = kayit;
     dbYaz(db);
@@ -539,29 +508,6 @@ async function apiYonlendir(req, res, url) {
     const kayit = db.kiralamalar.find(function (k) { return k.id === id; });
     if (!kayit) return jsonGonder(res, 404, { basarili: false, mesaj: "Kayıt bulunamadı." });
     kayit.tamamlandi = !!govde.tamamlandi;
-    dbYaz(db);
-    return jsonGonder(res, 200, kayit);
-  }
-
-  // Kontrat fotoğrafı yükleme (ön/arka, ayrı ayrı — isteğe bağlı)
-  eslesme = yol.match(/^\/api\/kiralamalar\/([a-zA-Z0-9_]+)\/kontrat$/);
-  if (eslesme && metod === "POST") {
-    const id = eslesme[1];
-    let govde;
-    try { govde = await govdeOku(req); } catch (e) {
-      const mesaj = e.message === "govde_cok_buyuk" ? "Fotoğraf çok büyük." : "Geçersiz istek.";
-      return jsonGonder(res, 400, { basarili: false, mesaj: mesaj });
-    }
-    if (govde.taraf !== "on" && govde.taraf !== "arka") return jsonGonder(res, 400, { basarili: false, mesaj: "Geçersiz taraf." });
-
-    const db = dbOku();
-    const kayit = db.kiralamalar.find(function (k) { return k.id === id; });
-    if (!kayit) return jsonGonder(res, 404, { basarili: false, mesaj: "Kayıt bulunamadı." });
-
-    const alan = govde.taraf === "on" ? "kontratFotoOn" : "kontratFotoArka";
-    const sonuc = base64FotoKaydet(govde.fotoBase64, kayit[alan], "kontratlar");
-    if (sonuc.hata) return jsonGonder(res, 422, { basarili: false, hatalar: ["foto"] });
-    kayit[alan] = sonuc.yol;
     dbYaz(db);
     return jsonGonder(res, 200, kayit);
   }
@@ -789,17 +735,13 @@ async function apiYonlendir(req, res, url) {
 function kiralamaVeriHazirla(v) {
   return {
     plaka: typeof v.plaka === "string" ? v.plaka.trim() : "",
-    marka: typeof v.marka === "string" ? v.marka.trim() : "",
     model: typeof v.model === "string" ? v.model.trim() : "",
     yil: Number(v.yil),
     baslangic: v.baslangic,
     bitis: v.bitis,
     fiyat: Number(v.fiyat),
     paraBirimi: v.paraBirimi,
-    odemeTuru: v.odemeTuru,
-    taksitSayisi: v.odemeTuru === "taksit" ? Number(v.taksitSayisi) : null,
     musteriAd: typeof v.musteriAd === "string" ? v.musteriAd.trim() : "",
-    musteriTC: typeof v.musteriTC === "string" ? v.musteriTC.trim() : "",
     telefon: typeof v.telefon === "string" ? v.telefon.trim() : "",
     not: typeof v.not === "string" ? v.not.trim() : "",
     tamamlandi: !!v.tamamlandi

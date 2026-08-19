@@ -52,11 +52,6 @@
     return n.toLocaleString("tr-TR", { maximumFractionDigits: 2 }) + " ₺";
   }
 
-  function tcMaskele(tc) {
-    if (!tc || tc.length < 4) return "—";
-    return tc.slice(0, 2) + "•••••" + tc.slice(-2);
-  }
-
   /* ---------- Sunucu iletişimi ---------- */
 
   function oturumBittiIseYonlendir() {
@@ -183,10 +178,9 @@
   var kSiralama = { alan: "baslangic", yon: "desc" };
 
   var kAlanEslesme = {
-    plaka: "k-plaka", marka: "k-marka", model: "k-model", yil: "k-yil",
+    plaka: "k-plaka", model: "k-model", yil: "k-yil",
     baslangic: "k-baslangic", bitis: "k-bitis", fiyat: "k-fiyat", paraBirimi: "k-para-birimi",
-    odemeTuru: "k-odeme-turu", taksitSayisi: "k-taksit-sayisi",
-    musteriAd: "k-ad", musteriTC: "k-tc"
+    musteriAd: "k-ad"
   };
 
   function kiralamaFiltreliListe() {
@@ -198,7 +192,7 @@
 
     liste = liste.filter(function (k) {
       if (arama) {
-        var hedef = (k.plaka + " " + k.marka + " " + k.model + " " + k.musteriAd).toLowerCase();
+        var hedef = (k.plaka + " " + k.model + " " + k.musteriAd).toLowerCase();
         if (hedef.indexOf(arama) === -1) return false;
       }
       if (durum === "devam" && k.tamamlandi) return false;
@@ -234,11 +228,10 @@
         return (
           '<tr class="' + (k.tamamlandi ? "tamamlandi-satir" : "") + '" data-id="' + escapeHTML(k.id) + '">' +
             '<td><span class="plaka-etiket">' + escapeHTML(k.plaka) + "</span></td>" +
-            '<td><span class="metin-vurgu">' + escapeHTML(k.marka) + " " + escapeHTML(k.model) + " (" + escapeHTML(k.yil) + ")</span></td>" +
+            '<td><span class="metin-vurgu">' + escapeHTML(k.model) + " (" + escapeHTML(k.yil) + ")</span></td>" +
             '<td class="mono">' + formatTarihAraligi(k.baslangic, k.bitis) + "</td>" +
             '<td class="mono">' + formatTutar(k.fiyat, k.paraBirimi) + "</td>" +
             "<td>" + escapeHTML(k.musteriAd) + (k.telefon ? '<br><span class="yardim-metin">' + escapeHTML(k.telefon) + "</span>" : "") + "</td>" +
-            '<td><span class="tc-gizli">' + escapeHTML(tcMaskele(k.musteriTC)) + "</span></td>" +
             "<td>" + (k.tamamlandi
               ? '<span class="durum-rozet tamam">Tamamlandı</span>'
               : '<span class="durum-rozet devam">Devam Ediyor</span>') + "</td>" +
@@ -275,17 +268,10 @@
   var kiralamaModal = el("kiralama-modal");
   var kiralamaForm = el("kiralama-form");
 
-  function kiralamaOdemeAlanGoster() {
-    var taksitMi = el("k-odeme-turu").value === "taksit";
-    el("k-taksit-alani").hidden = !taksitMi;
-    if (!taksitMi) el("k-taksit-alani").classList.remove("gecersiz");
-  }
-
   function kiralamaModalAc(id) {
     kiralamaForm.reset();
     document.querySelectorAll("#kiralama-form .alan-form").forEach(function (a) { a.classList.remove("gecersiz"); });
     el("k-para-birimi").value = "TRY";
-    el("k-odeme-turu").value = "pesin";
 
     if (id) {
       var kayit = kiralamaVerisi.find(function (k) { return k.id === id; });
@@ -293,25 +279,20 @@
       el("kiralama-modal-baslik").textContent = "Kiralamayı Düzenle";
       el("kiralama-id").value = kayit.id;
       el("k-plaka").value = kayit.plaka;
-      el("k-marka").value = kayit.marka;
       el("k-model").value = kayit.model;
       el("k-yil").value = kayit.yil;
       el("k-baslangic").value = kayit.baslangic;
       el("k-bitis").value = kayit.bitis;
       el("k-fiyat").value = kayit.fiyat;
       el("k-para-birimi").value = kayit.paraBirimi || "TRY";
-      el("k-odeme-turu").value = kayit.odemeTuru || "pesin";
-      el("k-taksit-sayisi").value = kayit.taksitSayisi || "";
       el("k-telefon").value = kayit.telefon || "";
       el("k-ad").value = kayit.musteriAd;
-      el("k-tc").value = kayit.musteriTC;
       el("k-not").value = kayit.not || "";
       el("k-tamamlandi").checked = !!kayit.tamamlandi;
     } else {
       el("kiralama-modal-baslik").textContent = "Yeni Kiralama Ekle";
       el("kiralama-id").value = "";
     }
-    kiralamaOdemeAlanGoster();
     kiralamaModal.classList.add("acik");
     el("k-plaka").focus();
   }
@@ -341,7 +322,6 @@
     });
 
     el("kiralama-ekle-btn").addEventListener("click", function () { kiralamaModalAc(null); });
-    el("k-odeme-turu").addEventListener("change", kiralamaOdemeAlanGoster);
 
     el("kiralama-tablo-govde").addEventListener("click", function (e) {
       var tr = e.target.closest("tr[data-id]");
@@ -387,17 +367,13 @@
 
       var govde = {
         plaka: el("k-plaka").value.trim(),
-        marka: el("k-marka").value.trim(),
         model: el("k-model").value.trim(),
         yil: Number(el("k-yil").value),
         baslangic: el("k-baslangic").value,
         bitis: el("k-bitis").value,
         fiyat: Number(el("k-fiyat").value),
         paraBirimi: el("k-para-birimi").value,
-        odemeTuru: el("k-odeme-turu").value,
-        taksitSayisi: el("k-odeme-turu").value === "taksit" ? Number(el("k-taksit-sayisi").value) : null,
         musteriAd: el("k-ad").value.trim(),
-        musteriTC: el("k-tc").value.trim(),
         telefon: el("k-telefon").value.trim(),
         not: el("k-not").value.trim(),
         tamamlandi: el("k-tamamlandi").checked
@@ -445,8 +421,6 @@
   function kiralamaDetayKapat() { kiralamaDetayModal.classList.remove("acik"); }
 
   function kiralamaDetayRenderEt(kayit) {
-    var odemeMetni = kayit.odemeTuru === "taksit" ? (kayit.taksitSayisi + " taksit") : "Peşin";
-
     var uzatmaListesiHtml;
     if (!kayit.uzatmalar || kayit.uzatmalar.length === 0) {
       uzatmaListesiHtml = '<div class="takvim-detay-bos">Bu kiralama henüz uzatılmadı.</div>';
@@ -459,26 +433,13 @@
       }).join("");
     }
 
-    function kontratKutuHtml(taraf, yol) {
-      var baslik = taraf === "on" ? "Kontrat — Ön Yüz" : "Kontrat — Arka Yüz";
-      var icerik = yol
-        ? '<img class="kontrat-onizleme" src="' + escapeHTML(yol) + '" alt="' + escapeHTML(baslik) + '">'
-        : '<div class="kontrat-bos">Kontrat girilmedi</div>';
-      return '<div class="kontrat-kutu">' +
-        '<div class="kontrat-baslik">' + escapeHTML(baslik) + "</div>" +
-        icerik +
-        '<input type="file" accept="image/png,image/jpeg,image/webp" capture="environment" data-kontrat-taraf="' + taraf + '">' +
-      "</div>";
-    }
-
     var html =
       '<div class="detay-blok">' +
         "<h4>Kiralama Bilgileri</h4>" +
         '<div class="detay-izgara">' +
-          detaySatir("Araç", escapeHTML(kayit.plaka) + " — " + escapeHTML(kayit.marka) + " " + escapeHTML(kayit.model) + " (" + escapeHTML(kayit.yil) + ")") +
+          detaySatir("Araç", escapeHTML(kayit.plaka) + " — " + escapeHTML(kayit.model) + " (" + escapeHTML(kayit.yil) + ")") +
           detaySatir("Tarih Aralığı", formatTarihAraligi(kayit.baslangic, kayit.bitis)) +
           detaySatir("Müşteri", escapeHTML(kayit.musteriAd)) +
-          detaySatir("TC Kimlik No", escapeHTML(tcMaskele(kayit.musteriTC))) +
           detaySatir("Telefon", kayit.telefon ? escapeHTML(kayit.telefon) : "—") +
           detaySatir("Durum", kayit.tamamlandi ? "Tamamlandı" : "Devam Ediyor") +
         "</div>" +
@@ -487,12 +448,7 @@
         "<h4>Ödeme</h4>" +
         '<div class="detay-izgara">' +
           detaySatir("Tutar", formatTutar(kayit.fiyat, kayit.paraBirimi)) +
-          detaySatir("Ödeme Türü", odemeMetni) +
         "</div>" +
-      "</div>" +
-      '<div class="detay-blok">' +
-        "<h4>Kontrat Fotoğrafı</h4>" +
-        '<div class="kontrat-izgara">' + kontratKutuHtml("on", kayit.kontratFotoOn) + kontratKutuHtml("arka", kayit.kontratFotoArka) + "</div>" +
       "</div>" +
       '<div class="detay-blok">' +
         '<div class="detay-blok-baslik-satiri">' +
@@ -575,26 +531,6 @@
       });
     }
 
-    document.querySelectorAll('#kiralama-detay-icerik input[data-kontrat-taraf]').forEach(function (girdi) {
-      girdi.addEventListener("change", function (e) {
-        var dosya = e.target.files && e.target.files[0];
-        if (!dosya) return;
-        if (!/^image\/(jpeg|png|webp)$/.test(dosya.type)) {
-          bildirimGoster("Yalnızca JPG, PNG veya WEBP fotoğraf seçebilirsiniz.", "sil");
-          e.target.value = "";
-          return;
-        }
-        var taraf = girdi.getAttribute("data-kontrat-taraf");
-        resimSikistir(dosya, 1400, 0.82).then(function (dataUrl) {
-          return apiGonder("/api/kiralamalar/" + kayit.id + "/kontrat", "POST", { taraf: taraf, fotoBase64: dataUrl });
-        }).then(function (sonuc) {
-          if (sonuc.durum === 200) { bildirimGoster("Kontrat fotoğrafı kaydedildi."); detayiTazele(); }
-          else bildirimGoster((sonuc.veri && sonuc.veri.mesaj) || "Fotoğraf kaydedilemedi.", "sil");
-        }).catch(function () {
-          bildirimGoster("Fotoğraf işlenemedi, lütfen başka bir dosya deneyin.", "sil");
-        });
-      });
-    });
   }
 
   function baglaKiralamaDetayOlaylari() {
@@ -867,7 +803,7 @@
     el("ist-ciro").textContent = formatTutar(toplamTRY, "TRY") + (toplamUSD > 0 ? " + " + formatTutar(toplamUSD, "USD") : "");
 
     var birlesik = kiralamaVerisi.filter(function (k) { return !k.tamamlandi; }).map(function (k) {
-      return { tur: "Kiralama", detay: k.plaka + " · " + k.marka + " " + k.model, bas: k.baslangic, bit: k.bitis, fiyat: k.fiyat, paraBirimi: k.paraBirimi };
+      return { tur: "Kiralama", detay: k.plaka + " · " + k.model, bas: k.baslangic, bit: k.bitis, fiyat: k.fiyat, paraBirimi: k.paraBirimi };
     }).concat(turVerisi.filter(function (t) { return !t.tamamlandi; }).map(function (t) {
       return { tur: "Tur", detay: t.guzergah, bas: t.baslangic, bit: t.bitis, fiyat: t.fiyat, paraBirimi: t.paraBirimi };
     }));
@@ -909,7 +845,7 @@
       harita[iso].push({ sinif: sinif, kisaEtiket: kisaEtiket, tamMetin: tamMetin });
     }
     kiralamaVerisi.forEach(function (k) {
-      var ozet = k.marka + " " + k.model + " (" + k.plaka + ") — " + k.musteriAd + " · " + formatTutar(k.fiyat, k.paraBirimi);
+      var ozet = k.model + " (" + k.plaka + ") — " + k.musteriAd + " · " + formatTutar(k.fiyat, k.paraBirimi);
       ekle(k.baslangic, "kir-bas", k.plaka, ozet);
       ekle(k.bitis, "kir-bit", k.plaka, ozet);
     });
@@ -1360,7 +1296,6 @@
         var onizleme = el("k-arac-onizleme");
         if (!arac) { onizleme.src = "img/arac-yok.svg"; return; }
         el("k-plaka").value = arac.plaka;
-        el("k-marka").value = arac.marka;
         el("k-model").value = arac.model;
         el("k-yil").value = arac.yil;
         onizleme.src = arac.fotoYolu ? arac.fotoYolu : "img/arac-yok.svg";

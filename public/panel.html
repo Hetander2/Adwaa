@@ -126,7 +126,7 @@
 
       <div class="panel-kart">
         <div class="filtre-serit">
-          <input type="text" class="arama" id="kiralama-arama" placeholder="Plaka, marka, müşteri ara…">
+          <input type="text" class="arama" id="kiralama-arama" placeholder="Plaka, model, müşteri ara…">
           <select id="kiralama-durum-filtre">
             <option value="">Tüm durumlar</option>
             <option value="devam">Devam ediyor</option>
@@ -142,17 +142,16 @@
             <thead>
               <tr>
                 <th data-alan="plaka">Plaka <span class="ok">▲▼</span></th>
-                <th data-alan="marka">Araç <span class="ok">▲▼</span></th>
+                <th data-alan="model">Araç <span class="ok">▲▼</span></th>
                 <th data-alan="baslangic">Tarih Aralığı <span class="ok">▲▼</span></th>
                 <th data-alan="fiyat">Fiyat <span class="ok">▲▼</span></th>
                 <th data-alan="musteriAd">Müşteri <span class="ok">▲▼</span></th>
-                <th>TC Kimlik No</th>
                 <th data-alan="durum">Durum <span class="ok">▲▼</span></th>
                 <th>Tamamlandı</th>
                 <th></th>
               </tr>
             </thead>
-            <tbody id="kiralama-tablo-govde"><tr><td colspan="9" class="yukleniyor">Yükleniyor…</td></tr></tbody>
+            <tbody id="kiralama-tablo-govde"><tr><td colspan="8" class="yukleniyor">Yükleniyor…</td></tr></tbody>
           </table>
         </div>
         <div id="kiralama-bos-durum" class="bos-durum" hidden>
@@ -262,17 +261,12 @@
                 <option value="">— Listede yok / elle gir —</option>
               </select>
             </div>
-            <span class="yardim">Yalnızca "Kiralama" kategorisindeki araçlar listelenir; seçtiğinizde plaka/marka/model/yıl otomatik doldurulur.</span>
+            <span class="yardim">Yalnızca "Kiralama" kategorisindeki araçlar listelenir; seçtiğinizde plaka/model/yıl otomatik doldurulur.</span>
           </div>
           <div class="alan-form">
             <label for="k-plaka">Plaka *</label>
             <input type="text" id="k-plaka" placeholder="61 AB 123" required>
             <span class="hata">Plaka zorunludur.</span>
-          </div>
-          <div class="alan-form">
-            <label for="k-marka">Marka *</label>
-            <input type="text" id="k-marka" placeholder="Renault" required>
-            <span class="hata">Marka zorunludur.</span>
           </div>
           <div class="alan-form">
             <label for="k-model">Model *</label>
@@ -306,18 +300,6 @@
             <span class="hata">Geçerli bir tutar girin.</span>
           </div>
           <div class="alan-form">
-            <label for="k-odeme-turu">Ödeme Türü *</label>
-            <select id="k-odeme-turu">
-              <option value="pesin">Peşin</option>
-              <option value="taksit">Taksitli</option>
-            </select>
-          </div>
-          <div class="alan-form" id="k-taksit-alani" hidden>
-            <label for="k-taksit-sayisi">Taksit Sayısı *</label>
-            <input type="number" id="k-taksit-sayisi" min="2" max="36" placeholder="Örn. 3">
-            <span class="hata">2-36 arası bir sayı girin.</span>
-          </div>
-          <div class="alan-form">
             <label for="k-telefon">Müşteri Telefonu</label>
             <input type="tel" id="k-telefon" placeholder="05xx xxx xx xx">
           </div>
@@ -325,11 +307,6 @@
             <label for="k-ad">Müşteri Ad Soyad *</label>
             <input type="text" id="k-ad" placeholder="Ad Soyad" required>
             <span class="hata">Müşteri adı zorunludur.</span>
-          </div>
-          <div class="alan-form">
-            <label for="k-tc">Müşteri TC Kimlik No *</label>
-            <input type="text" id="k-tc" inputmode="numeric" maxlength="11" placeholder="11 haneli" required>
-            <span class="hata">Geçerli bir TC kimlik numarası girin.</span>
           </div>
           <div class="alan-form tam">
             <label for="k-not">Not</label>
